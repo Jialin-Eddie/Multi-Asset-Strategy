@@ -1,0 +1,29 @@
+name: multi_as_env
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - statsmodels
+  - matplotlib
+  - seaborn
+  - tqdm
+  - jupyter
+  - yfinance
+  - cvxpy
+  - cvxopt
+  - arch       # GARCH models
+  - numba
+  - pip
+  - pip:
+      - riskfolio-lib     # Portfolio optimization / risk budgeting
+      - yfinance          # (pip version, fallback)
+      - pyRMT             # Random Matrix Theory toolkit
+      - gym               # RL env for DQN (your deep learning project)
+      - gymnasium         # New version of gym
+      - stable-baselines3 # RL algorithms (PPO, DQN, A2C)

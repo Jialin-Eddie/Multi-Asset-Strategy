@@ -1,0 +1,21 @@
+universe:
+  - SPY    # US Equity
+  - TLT    # Long-term Treasury
+  - GLD    # Gold
+  - DBC    # Broad Commodity
+  - VNQ    # REIT
+
+data:
+  start_date: "2005-01-01"
+  end_date: null          # null = up to latest
+
+trend:
+  lookback_days: 252      # 12M momentum
+
+risk:
+  target_vol: 0.10        # 10% 年化波动目标（后面用）
+  rebalance_freq: "M"     # 月度再平衡
+
+constraints:
+  max_weight: 0.4         # 单资产上限 40%
+  long_only: true
