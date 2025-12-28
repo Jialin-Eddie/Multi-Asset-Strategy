@@ -591,6 +591,201 @@ Sample Size: Sufficient for statistical significance
 - **Aggressive**: 189d (higher returns, accept more DD)
 - **Institutional**: 252d (standard, explainable, robust)
 
+### 2025-12-21: Risk Parity vs Equal Weight Comparison
+
+#### Position Sizing Methods Tested
+
+**Equal Weight (EW):**
+- Allocate 1/N to each active position
+- Simple, industry standard
+- No volatility estimation needed
+
+**Risk Parity (RP):**
+- Inverse volatility weighting
+- Each asset contributes equally to portfolio risk
+- Higher weight to lower volatility assets
+- 60-day rolling volatility estimation
+
+#### Performance Results (SMA 252-day signals)
+
+**Comparison Table:**
+
+| Metric | Equal Weight | Risk Parity | Difference |
+|--------|--------------|-------------|------------|
+| Total Return | 482.66% | 479.59% | **-3.08%** |
+| Annualized Return | 8.85% | 8.82% | -0.03% |
+| Volatility | 12.50% | 12.21% | **-0.29%** ⭐ |
+| Sharpe Ratio | 0.71 | **0.72** | **+0.01** ⭐ |
+| Sortino Ratio | 0.90 | **0.91** | +0.00 |
+| Max Drawdown | **-23.19%** | -23.67% | -0.48% |
+| Calmar Ratio | **0.38** | 0.37 | -0.01 |
+| Monthly Turnover | 26.78% | 27.57% | +0.79% |
+
+#### Key Findings
+
+**1. Near-Identical Performance** 🤝
+- Total return difference: Only 3.08% over 20 years!
+- Sharpe difference: +0.01 (essentially tied)
+- Drawdown difference: -0.48% (negligible)
+- Strategies track almost perfectly (0.953 correlation)
+
+**2. Marginal Sharpe Improvement**
+- Risk Parity: 0.72 vs Equal Weight: 0.71
+- Achieved through slightly lower volatility (-0.29%)
+- But offset by slightly lower returns (-3.08%)
+- **Improvement minimal and not practically significant**
+
+**3. Weight Distribution Analysis**
+
+**Average Weights (when active):**
+| Asset | Equal Weight | Risk Parity | Difference |
+|-------|--------------|-------------|------------|
+| SPY | 32.8% | **35.5%** | +2.8% |
+| TLT | 31.7% | **34.8%** | +3.1% |
+| GLD | 32.2% | 31.8% | -0.4% |
+| DBC | 31.1% | 27.7% | **-3.4%** |
+| VNQ | 28.7% | 25.8% | **-2.9%** |
+
+**Asset Volatility (60-day annualized):**
+- TLT: 13.9% (lowest) → Gets **highest** RP weight
+- SPY: 16.3% (low) → Gets **high** RP weight
+- GLD: 16.6% (moderate)
+- DBC: 17.3% (high) → Gets **lower** RP weight
+- VNQ: 22.6% (highest) → Gets **lowest** RP weight
+
+**Pattern:** Risk parity successfully overweights stable assets (TLT, SPY), underweights volatile ones (DBC, VNQ)
+
+**4. Why Minimal Difference?**
+
+**Reason 1: Similar Volatilities**
+- Asset volatilities range from 13.9% to 22.6%
+- Relatively narrow dispersion (1.6x ratio, not 3-4x)
+- Less room for risk parity to add value
+
+**Reason 2: Signal Selection Provides Diversification**
+- SMA filter already selects trending assets
+- Typically holds 3 of 5 assets (avg 3.01)
+- Pre-screened universe reduces need for risk weighting
+
+**Reason 3: Small Universe (5 Assets)**
+- Risk parity shines with 10+ assets
+- With only 5 assets, benefits limited
+- Equal weight already quite efficient
+
+**Reason 4: Monthly Rebalancing**
+- Weights revert to target monthly
+- Risk estimates have time to change
+- Reduces impact of precise sizing
+
+**5. Turnover Impact**
+- Risk Parity: 27.57% monthly (slightly higher)
+- Equal Weight: 26.78% monthly
+- Difference: +0.79% (not material)
+- Risk parity requires slightly more rebalancing due to changing volatilities
+
+#### Drawdown Comparison
+
+Both strategies show nearly identical drawdown profiles:
+- Equal Weight: -23.19% max
+- Risk Parity: -23.67% max
+- Track closely throughout all crisis periods
+- No meaningful downside protection difference
+
+#### Rolling Sharpe Analysis
+
+Rolling 12-month Sharpe ratios:
+- Both strategies maintain positive Sharpe most periods
+- Risk Parity occasionally edges ahead (green above blue)
+- Difference marginal and inconsistent
+- No clear winner in crisis vs expansion periods
+
+#### Monthly Return Correlation
+
+**Correlation: 0.953** (extremely high!)
+- Strategies nearly perfectly correlated
+- Scatter plot shows tight clustering around 45° line
+- Both capture same market trends
+- Weighting differences have minimal impact on outcomes
+
+#### Verdict: Equal Weight Wins by Simplicity
+
+**Equal Weight Preferred:** ⭐
+
+**Reasons:**
+1. **Simpler Implementation**
+   - No volatility estimation needed
+   - No rolling calculations
+   - Easier to explain to investors
+
+2. **Slightly Better Drawdown Control**
+   - -23.19% vs -23.67% (marginally better)
+   - Calmar ratio 0.38 vs 0.37
+
+3. **Negligible Performance Difference**
+   - 3% return difference over 20 years = 0.15%/year
+   - Sharpe 0.71 vs 0.72 = rounding error
+   - Not worth added complexity
+
+4. **Lower Turnover**
+   - 26.78% vs 27.57% monthly
+   - Reduces transaction costs
+
+5. **More Stable Weights**
+   - Fixed 1/N allocation
+   - No estimation risk
+   - No parameter sensitivity
+
+**Risk Parity Disadvantages:**
+- **Added Complexity**: Requires volatility estimation
+- **Estimation Risk**: 60-day window may be noisy
+- **Parameter Sensitivity**: Lookback period choice matters
+- **Marginal Benefit**: Sharpe improvement too small to justify
+
+#### When Risk Parity Might Help
+
+Risk parity typically adds more value when:
+1. **Large volatility dispersion** (assets with 3-4x vol difference)
+2. **Larger universe** (10+ assets)
+3. **Buy-and-hold** (not pre-filtered by signals)
+4. **Higher correlations** (when diversification limited)
+
+**None apply to our SMA trend strategy with 5 assets**
+
+#### Statistical Significance
+
+Performance differences are **NOT statistically significant**:
+- 3.08% return difference over 20 years
+- Within noise/sampling error
+- Sharpe difference of 0.01 is negligible
+- Could reverse in out-of-sample period
+
+**Conclusion:** Risk parity provides no material advantage over equal weight for this strategy.
+
+#### Recommendation
+
+**Use Equal Weight (1/N) for SMA Trend Strategy** ⭐⭐⭐
+
+**Rationale:**
+1. Simpler and more robust
+2. Equivalent risk-adjusted returns
+3. Lower implementation complexity
+4. Avoid parameter/estimation risk
+5. Industry standard for small universes
+
+**Risk Parity NOT Recommended** for this application:
+- Complexity not justified by results
+- Marginal Sharpe improvement (0.01) insignificant
+- Slight underperformance on returns and drawdown
+- Occam's Razor: Simpler solution equally effective
+
+#### Key Insight
+
+**"For trend-following with signal pre-selection and small universes (≤5 assets), equal weighting is sufficient. Risk parity adds complexity without meaningful benefit."**
+
+- Signal selection does the heavy lifting
+- Equal weight across pre-filtered trending assets works well
+- No need to overcomplicate with risk-based sizing
+
 ---
 
 ## Data Sources
