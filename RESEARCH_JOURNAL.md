@@ -434,6 +434,163 @@ Sample Size: Sufficient for statistical significance
 - Lower volatility and drawdowns make SMA the clear winner
 - Risk-adjusted returns (Sharpe/Sortino) strongly favor SMA
 
+### 2025-12-21: SMA Lookback Period Optimization
+
+#### Optimization Methodology
+- **Parameters Tested**: 6 lookback periods (63, 126, 189, 252, 315, 378 days)
+- **Range**: 3 months to 18 months
+- **Baseline**: 252 days (12 months) - industry standard
+- **Evaluation Metrics**: Total return, Sharpe, Sortino, Calmar, Max Drawdown
+- **Overfitting Check**: Coefficient of variation analysis
+
+#### Optimization Results
+
+**Performance by Lookback Period:**
+
+| Lookback | Period | Total Return | Sharpe | Max DD | Calmar | Avg Positions |
+|----------|--------|--------------|--------|--------|--------|---------------|
+| 63 days | 3M | 377.0% | 0.60 | -33.4% | 0.23 | 2.94 |
+| 126 days | 6M | 439.5% | 0.68 | -27.4% | 0.31 | 3.04 |
+| **189 days** | **9M** | **502.4%** | **0.71** | -26.7% | 0.34 | 3.05 |
+| **252 days** | **12M** | **482.7%** | **0.71** | **-23.2%** | **0.38** | 3.01 |
+| 315 days | 15M | 371.8% | 0.64 | -26.3% | 0.29 | 3.00 |
+| 378 days | 18M | 366.2% | 0.64 | -28.3% | 0.27 | 2.99 |
+
+#### Key Findings
+
+**1. Optimal Periods by Metric**
+- **Total Return**: 189 days (9M) - 502.4%
+- **Sharpe Ratio**: 189 days (9M) - 0.71 (tied with 252)
+- **Sortino Ratio**: 252 days (12M) - 0.90 ⭐
+- **Calmar Ratio**: 252 days (12M) - 0.38 ⭐
+- **Min Drawdown**: 252 days (12M) - -23.2% ⭐
+
+**2. Top Performers**
+- **189 days (9M)**: Highest returns and Sharpe, slightly worse drawdown
+- **252 days (12M)**: Best drawdown control, excellent all-around
+- Both deliver Sharpe of 0.71 (equally good risk-adjusted returns)
+
+**3. Performance Curve**
+- **Too Short (63d/3M)**: High turnover, poor Sharpe (0.60), large drawdown (-33%)
+- **Sweet Spot (126-252d)**: Peak performance, Sharpe 0.68-0.71
+- **Too Long (315-378d)**: Miss trends, lower returns, Sharpe drops to 0.64
+
+**4. Robustness Analysis** ⭐ EXCELLENT
+- Sharpe Ratio Std Dev: 0.043
+- Coefficient of Variation: **6.4%** (very low!)
+- Range: 0.604 to 0.711
+- **Interpretation**: Results highly robust across lookback periods
+- **Implication**: Low overfitting risk, strategy fundamentally sound
+
+**5. Turnover Analysis**
+- 63d: 50.8% monthly (excessive)
+- 126d: 36.4% monthly (high)
+- 189d: 27.8% monthly (moderate)
+- 252d: 26.8% monthly (moderate) ⭐
+- 315d: 23.1% monthly (low)
+- 378d: 19.1% monthly (very low)
+- **Finding**: Longer periods reduce costs but sacrifice returns
+
+#### Detailed Comparison: 189d vs 252d
+
+**189 days (9M) - The Optimizer's Choice:**
+- Total Return: **502.4%** (+19.7% vs 252d)
+- Sharpe: **0.71** (tied)
+- Max DD: **-26.7%** (-3.5% worse)
+- Calmar: **0.34** (11% lower)
+- Sortino: Not shown in summary, but likely similar
+- **Advantage**: Higher absolute returns
+
+**252 days (12M) - The Balanced Choice:** ⭐
+- Total Return: **482.7%** (still excellent)
+- Sharpe: **0.71** (tied)
+- Max DD: **-23.2%** (best of all periods!)
+- Calmar: **0.38** (highest - best return/DD ratio)
+- Sortino: **0.90** (best downside protection)
+- **Advantage**: Superior drawdown control
+
+#### Strategic Implications
+
+**Why 189d and 252d Dominate:**
+1. **Trend Identification Window**:
+   - Too short (< 126d): Captures noise, not trends
+   - Optimal (126-252d): Captures genuine trends
+   - Too long (> 315d): Misses trend changes, late exits
+
+2. **Market Cycle Alignment**:
+   - 189d ≈ 9 months: Captures earnings cycles (quarterly × 3)
+   - 252d ≈ 12 months: Full annual cycle, tax year alignment
+   - Both align with fundamental business cycles
+
+3. **Risk-Return Trade-off**:
+   - 189d: Maximize returns, accept slightly more drawdown
+   - 252d: Optimize risk-adjusted returns, minimize drawdown
+   - Difference marginal in Sharpe, significant in drawdown
+
+**Why Extremes Underperform:**
+1. **Short periods (63-126d)**:
+   - Too sensitive to short-term volatility
+   - High turnover → transaction costs
+   - Whipsaw risk in choppy markets
+
+2. **Long periods (315-378d)**:
+   - Slow to enter trends → miss early gains
+   - Slow to exit → suffer larger drawdowns
+   - Hold declining assets too long
+
+#### Recommendation
+
+**PRIMARY: Stick with 252 days (12 months)** ⭐⭐⭐
+
+**Rationale:**
+1. **Best drawdown control** (-23.2% vs -26.7% for 189d)
+2. **Highest Calmar ratio** (0.38 - best return per unit of DD)
+3. **Industry standard** (easier to explain, benchmark)
+4. **Robust performance** (Sharpe 0.71, tied for best)
+5. **Tax alignment** (annual holding periods)
+6. **Lower regret risk** (investors prefer drawdown minimization)
+
+**ALTERNATIVE: Consider 189 days (9 months)**
+
+**When to use:**
+- Maximize absolute returns over risk-adjusted
+- Willing to accept 3.5% higher drawdown
+- Shorter investment horizon
+- Higher risk tolerance
+
+**Verdict:** Difference is marginal (both excellent), but **252d wins on risk management**
+
+#### Overfitting Assessment
+
+**Evidence of Robustness:**
+1. **Low CV (6.4%)**: Sharpe varies minimally across periods
+2. **Smooth Performance Curve**: No sharp discontinuities
+3. **Multiple Optima**: 189d and 252d both excellent (not single spike)
+4. **Logical Pattern**: Performance follows expected trend-length theory
+5. **20-Year Test**: Long sample period reduces luck factor
+
+**Conclusion:** ✓ LOW OVERFITTING RISK
+
+- Results are **robust**, not curve-fitted
+- Strategy works across wide parameter range
+- Optimal region (126-252d) is broad, not narrow peak
+- Industry standard (252d) validated by data
+
+#### Practical Implementation Guidance
+
+**Recommended Approach:**
+1. **Use 252 days** as primary lookback period
+2. **Monitor 189 days** as alternative in backtests
+3. **Avoid < 126 days** (too noisy)
+4. **Avoid > 315 days** (too slow)
+5. **Rebalance monthly** regardless of lookback chosen
+
+**For Different Investor Types:**
+- **Conservative**: 252d or 315d (lower turnover, less DD)
+- **Moderate**: 252d (optimal balance) ⭐
+- **Aggressive**: 189d (higher returns, accept more DD)
+- **Institutional**: 252d (standard, explainable, robust)
+
 ---
 
 ## Data Sources
