@@ -324,12 +324,18 @@ def run_full_validation(
 if __name__ == "__main__":
     # 运行数据验证
     from loader import load_raw_prices
+    import yaml
 
     print("Loading data...")
     prices = load_raw_prices()
 
+    # Read config to get requested start date
+    config_path = Path(__file__).resolve().parents[2] / "config" / "universe.yaml"
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = yaml.safe_load(f)
+
     tickers = prices.columns.tolist()
-    start_date = "2005-01-01"
+    start_date = config['data']['start_date']  # Use config start date
 
     results = run_full_validation(prices, tickers, start_date)
 

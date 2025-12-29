@@ -6,8 +6,8 @@ universe:
   - VNQ    # REIT
 
 data:
-  start_date: "2005-01-01"
-  end_date: null          # null = up to latest
+  start_date: "2006-02-03"  # DBC inception date (latest ETF in universe)
+  end_date: null              # null = up to latest
 
 trend:
   lookback_days: 252      # 12M momentum

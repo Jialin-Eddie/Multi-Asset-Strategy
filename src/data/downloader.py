@@ -178,12 +178,24 @@ def download_history_stooq(
 
 
 if __name__ == "__main__":
-    # default universe，later can change to read from config.yml
-    default_universe = ["SPY", "TLT", "GLD", "DBC", "VNQ"]
+    # Read from config file
+    import yaml
+    config_path = Path(__file__).resolve().parents[2] / "config" / "universe.yaml"
+
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = yaml.safe_load(f)
+
+    universe = config['universe']
+    start_date = config['data']['start_date']
+    end_date = config['data']['end_date']
+
+    print(f"Loading configuration from {config_path}")
+    print(f"Universe: {universe}")
+    print(f"Date range: {start_date} to {end_date or 'latest'}\n")
 
     # Use Stooq as alternative data source (Yahoo Finance is rate-limited)
     print("Using Stooq data source (alternative to Yahoo Finance)\n")
-    download_history_stooq(default_universe)
+    download_history_stooq(universe, start=start_date, end=end_date)
 
 
 
