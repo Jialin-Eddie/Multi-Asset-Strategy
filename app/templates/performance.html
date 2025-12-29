@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Analytics - Multi-Asset Strategy{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">Performance Analytics</h1>
+        <p class="page-subtitle">Deep-dive into strategy performance metrics and risk analysis</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Performance Comparison Table -->
+    <div class="chart-container">
+        <h4 class="mb-3">Strategy Comparison</h4>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th>Total Return</th>
+                        <th>Ann. Return</th>
+                        <th>Sharpe</th>
+                        <th>Sortino</th>
+                        <th>Max DD</th>
+                        <th>Calmar</th>
+                        <th>Win Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for strategy in comparison_data %}
+                    <tr>
+                        <td><strong>{{ strategy.name }}</strong></td>
+                        <td class="{% if loop.first %}text-success fw-bold{% endif %}">{{ "%.1f"|format(strategy.total_return * 100) }}%</td>
+                        <td>{{ "%.2f"|format(strategy.annualized_return * 100) }}%</td>
+                        <td class="{% if loop.first %}text-primary fw-bold{% endif %}">{{ "%.3f"|format(strategy.sharpe_ratio) }}</td>
+                        <td>{{ "%.3f"|format(strategy.sortino_ratio) }}</td>
+                        <td class="{% if strategy.max_drawdown > -0.25 %}text-success{% else %}text-danger{% endif %}">{{ "%.2f"|format(strategy.max_drawdown * 100) }}%</td>
+                        <td>{{ "%.3f"|format(strategy.calmar_ratio) }}</td>
+                        <td>{{ "%.1f"|format(strategy.win_rate * 100) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Cumulative Returns -->
+    <div class="chart-container">
+        <h4 class="mb-3">Cumulative Returns Comparison</h4>
+        {{ cumulative_chart|safe }}
+    </div>
+
+    <!-- Drawdown and Rolling Sharpe -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="mb-3">Drawdown Evolution</h5>
+                {{ drawdown_chart|safe }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="mb-3">Rolling Sharpe Ratio (252-day)</h5>
+                {{ rolling_sharpe_chart|safe }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Heatmap -->
+    <div class="chart-container">
+        <h4 class="mb-3">Monthly Returns Heatmap</h4>
+        {{ monthly_heatmap|safe }}
+    </div>
+
+    <!-- Annual Returns and Distribution -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="mb-3">Annual Returns</h5>
+                {{ annual_chart|safe }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h5 class="mb-3">Return Distribution</h5>
+                {{ distribution_chart|safe }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

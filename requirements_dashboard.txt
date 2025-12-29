@@ -1,0 +1,7 @@
+Flask==3.0.0
+Flask-Caching==2.1.0
+plotly==5.18.0
+pandas==2.1.4
+numpy==1.26.2
+python-dotenv==1.0.0
+gunicorn==21.2.0
