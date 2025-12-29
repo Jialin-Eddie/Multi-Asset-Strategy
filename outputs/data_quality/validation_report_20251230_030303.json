@@ -1,0 +1,54 @@
+{
+  "timestamp": "2025-12-30T03:03:03.627982",
+  "validation_passed": false,
+  "inception_dates": [
+    {
+      "ticker": "SPY",
+      "inception_date": "1993-01-22",
+      "requested_start": "2005-01-01",
+      "actual_start": "2005-01-01",
+      "is_valid": true,
+      "days_gap": 0
+    },
+    {
+      "ticker": "TLT",
+      "inception_date": "2002-07-26",
+      "requested_start": "2005-01-01",
+      "actual_start": "2005-01-01",
+      "is_valid": true,
+      "days_gap": 0
+    },
+    {
+      "ticker": "GLD",
+      "inception_date": "2004-11-18",
+      "requested_start": "2005-01-01",
+      "actual_start": "2005-01-01",
+      "is_valid": true,
+      "days_gap": 0
+    },
+    {
+      "ticker": "DBC",
+      "inception_date": "2006-02-03",
+      "requested_start": "2005-01-01",
+      "actual_start": "2006-02-03",
+      "is_valid": false,
+      "days_gap": 398
+    },
+    {
+      "ticker": "VNQ",
+      "inception_date": "2004-09-29",
+      "requested_start": "2005-01-01",
+      "actual_start": "2005-01-01",
+      "is_valid": true,
+      "days_gap": 0
+    }
+  ],
+  "missing_rates": {
+    "SPY": 0.0,
+    "TLT": 0.0,
+    "GLD": 0.0,
+    "DBC": 0.0,
+    "VNQ": 0.0
+  },
+  "anomalies_count": 67
+}

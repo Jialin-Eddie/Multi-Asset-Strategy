@@ -1,0 +1,117 @@
+{
+  "experiment_id": "03",
+  "experiment_name": "Carry Signal Validation",
+  "timestamp": "2025-12-30T03:24:49.664701",
+  "data_range": {
+    "start": "2006-02-03T00:00:00",
+    "end": "2025-12-26T00:00:00",
+    "n_days": 5005
+  },
+  "correlation_1m": [
+    {
+      "ticker": "SPY",
+      "correlation": -0.017491119511392816,
+      "p_value": 0.2289840194325987,
+      "n_obs": 4732,
+      "significant": false
+    },
+    {
+      "ticker": "TLT",
+      "correlation": 0.027977554223693253,
+      "p_value": 0.04873900188156225,
+      "n_obs": 4963,
+      "significant": true
+    },
+    {
+      "ticker": "GLD",
+      "correlation": 0.10554152466394533,
+      "p_value": 9.04132809050966e-14,
+      "n_obs": 4963,
+      "significant": true
+    },
+    {
+      "ticker": "DBC",
+      "correlation": -0.12255748854202111,
+      "p_value": 4.534818667110312e-18,
+      "n_obs": 4963,
+      "significant": true
+    },
+    {
+      "ticker": "VNQ",
+      "correlation": -0.03770958263548276,
+      "p_value": 0.009479422739983102,
+      "n_obs": 4732,
+      "significant": true
+    }
+  ],
+  "information_coefficient": [
+    {
+      "ticker": "SPY",
+      "IC": -0.08762585584339463,
+      "IC_std": 0.36153992271504376,
+      "IC_IR": -0.24236840895841819,
+      "hit_rate": 0.6236263736263736,
+      "n_obs": 4732
+    },
+    {
+      "ticker": "TLT",
+      "IC": 0.020748128302877793,
+      "IC_std": 0.29480112597673025,
+      "IC_IR": 0.07038008499504686,
+      "hit_rate": 0.5027201289542615,
+      "n_obs": 4963
+    },
+    {
+      "ticker": "GLD",
+      "IC": 0.043509446464482696,
+      "IC_std": 0.3283904170711953,
+      "IC_IR": 0.13249304548083024,
+      "hit_rate": 0.4992947813822285,
+      "n_obs": 4963
+    },
+    {
+      "ticker": "DBC",
+      "IC": -0.07510935977629787,
+      "IC_std": 0.33351933561227387,
+      "IC_IR": -0.2252024148417432,
+      "hit_rate": 0.48116058835381825,
+      "n_obs": 4963
+    },
+    {
+      "ticker": "VNQ",
+      "IC": -0.054763949687153986,
+      "IC_std": 0.3807663628277314,
+      "IC_IR": -0.14382559761963695,
+      "hit_rate": 0.5198647506339814,
+      "n_obs": 4732
+    }
+  ],
+  "strategy_performance": {
+    "total_return": 0.3759267625125189,
+    "annual_return": 0.016197742542551463,
+    "annual_volatility": 0.11615774376655907,
+    "sharpe_ratio": 0.1394460844134842,
+    "max_drawdown": -0.5125781001013185,
+    "n_trades": 239
+  },
+  "failure_check": {
+    "passed": false,
+    "failures": [
+      "Mean IC = -0.031 < 0.100",
+      "5 assets with IC < 0.05",
+      "100.0% assets with corr < 0.15 (threshold: 60.0%)",
+      "Strategy Sharpe = 0.14 < 0.30"
+    ],
+    "metrics": {
+      "mean_ic": -0.0306483181078972,
+      "low_corr_pct": 1.0,
+      "strategy_sharpe": 0.1394460844134842
+    }
+  },
+  "failure_criteria": {
+    "min_mean_ic": 0.1,
+    "min_individual_ic": 0.05,
+    "max_low_corr_pct": 0.6,
+    "min_strategy_sharpe": 0.3
+  }
+}
