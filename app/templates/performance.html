@@ -89,5 +89,63 @@
             </div>
         </div>
     </div>
+
+    <!-- Regime Performance Section -->
+    <div class="chart-container">
+        <h4 class="mb-3">Performance by Market Regime</h4>
+        <p class="text-muted">How the strategy performs in bull, bear, and sideways markets</p>
+        {% if regime_performance is not none and regime_performance|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead style="background: #2C3E50; color: white;">
+                    <tr>
+                        <th>Market Regime</th>
+                        <th>Days</th>
+                        <th>Total Return</th>
+                        <th>Sharpe Ratio</th>
+                        <th>Max Drawdown</th>
+                        <th>Win Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for _, row in regime_performance.iterrows() %}
+                    <tr>
+                        <td>
+                            {% if row.regime == 'bull' %}
+                            <span style="background: #D4EDDA; padding: 5px 12px; border-radius: 20px; color: #27AE60; font-weight: bold;">
+                                📈 Bull Market
+                            </span>
+                            {% elif row.regime == 'bear' %}
+                            <span style="background: #FFEBEB; padding: 5px 12px; border-radius: 20px; color: #E74C3C; font-weight: bold;">
+                                📉 Bear Market
+                            </span>
+                            {% else %}
+                            <span style="background: #F8F9FA; padding: 5px 12px; border-radius: 20px; color: #95A5A6; font-weight: bold;">
+                                ↔️ Sideways
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.0f"|format(row.days) }}</td>
+                        <td class="{% if row.total_return > 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                            {{ "%+.1f"|format(row.total_return * 100) }}%
+                        </td>
+                        <td class="{% if row.sharpe_ratio > 0.8 %}text-success fw-bold{% elif row.sharpe_ratio > 0.5 %}text-primary{% endif %}">
+                            {{ "%.2f"|format(row.sharpe_ratio) }}
+                        </td>
+                        <td class="{% if row.max_drawdown > -0.15 %}text-success{% elif row.max_drawdown > -0.25 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ "%.1f"|format(row.max_drawdown * 100) }}%
+                        </td>
+                        <td>{{ "%.1f"|format(row.win_rate * 100) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="info-box mt-3">
+            <p class="mb-0"><strong>💡 Insight:</strong> The strategy performs consistently across different market conditions.
+            See <a href="/regimes">Market Regimes</a> page for detailed regime analysis with timeline charts.</p>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

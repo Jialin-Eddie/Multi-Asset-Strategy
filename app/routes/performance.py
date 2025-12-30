@@ -35,6 +35,9 @@ def index():
         metrics['name'] = strategy['name']
         comparison_data.append(metrics)
 
+    # Get regime performance data
+    regime_performance = loader.get_regime_performance()
+
     return render_template(
         'performance.html',
         cumulative_chart=cumulative_chart,
@@ -43,5 +46,6 @@ def index():
         monthly_heatmap=monthly_heatmap,
         annual_chart=annual_chart,
         distribution_chart=distribution_chart,
-        comparison_data=comparison_data
+        comparison_data=comparison_data,
+        regime_performance=regime_performance
     )

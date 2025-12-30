@@ -153,7 +153,7 @@ def create_rolling_sharpe_chart(strategies: Dict) -> str:
 def create_monthly_returns_heatmap(strategy_data: Dict) -> str:
     """Create monthly returns calendar heatmap."""
     returns = strategy_data['backtest']['returns']
-    monthly_returns = returns.resample('ME').apply(lambda x: (1 + x).prod() - 1)
+    monthly_returns = returns.resample('M').apply(lambda x: (1 + x).prod() - 1)
 
     # Create year-month pivot table
     monthly_returns_df = pd.DataFrame({
@@ -199,8 +199,8 @@ def create_annual_returns_chart(strategies: Dict) -> str:
     final = strategies['final']
     benchmark = strategies['benchmark']
 
-    final_annual = final['backtest']['returns'].resample('YE').apply(lambda x: (1 + x).prod() - 1)
-    bench_annual = benchmark['backtest']['returns'].resample('YE').apply(lambda x: (1 + x).prod() - 1)
+    final_annual = final['backtest']['returns'].resample('Y').apply(lambda x: (1 + x).prod() - 1)
+    bench_annual = benchmark['backtest']['returns'].resample('Y').apply(lambda x: (1 + x).prod() - 1)
 
     years = final_annual.index.year
 
@@ -301,6 +301,55 @@ def create_holdings_pie_chart(strategy_data: Dict) -> str:
         title='Current Holdings',
         template='plotly_white',
         height=300
+    )
+
+    return fig.to_html(full_html=False, include_plotlyjs='cdn')
+
+
+def create_regime_timeline_chart(spy_prices, regimes, strategy_value):
+    """Create market regime timeline with background shading."""
+    fig = go.Figure()
+
+    # Add background shading for regimes
+    regime_changes = regimes[regimes != regimes.shift(1)].index.tolist()
+    if regimes.index[0] not in regime_changes:
+        regime_changes.insert(0, regimes.index[0])
+    regime_changes.append(regimes.index[-1])
+
+    for i in range(len(regime_changes) - 1):
+        start = regime_changes[i]
+        end = regime_changes[i + 1]
+        regime = regimes[start]
+
+        color_map = {
+            'bull': 'rgba(39, 174, 96, 0.1)',
+            'bear': 'rgba(231, 76, 60, 0.1)',
+            'sideways': 'rgba(149, 165, 166, 0.05)'
+        }
+
+        fig.add_vrect(
+            x0=start, x1=end,
+            fillcolor=color_map.get(regime, 'rgba(149, 165, 166, 0.05)'),
+            layer="below", line_width=0
+        )
+
+    # Add strategy equity curve
+    fig.add_trace(go.Scatter(
+        x=strategy_value.index,
+        y=strategy_value.values,
+        name='Strategy',
+        line=dict(color='#3498DB', width=2.5),
+        hovertemplate='<b>Strategy</b><br>Date: %{x|%Y-%m-%d}<br>Value: $%{y:.2f}<extra></extra>'
+    ))
+
+    fig.update_layout(
+        title='Strategy Performance Across Market Regimes',
+        xaxis_title='Date',
+        yaxis_title='Portfolio Value ($)',
+        hovermode='x unified',
+        template='plotly_white',
+        height=500,
+        showlegend=True
     )
 
     return fig.to_html(full_html=False, include_plotlyjs='cdn')

@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+
+{% block title %}Learn - Multi-Asset Strategy{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">Educational Hub</h1>
+        <p class="page-subtitle">Learn the fundamentals of quantitative investing and trend-following strategies</p>
+    </div>
+</div>
+
+<div class="container" style="margin-top: 30px;">
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-pills mb-4" id="learnTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="fundamentals-tab" data-bs-toggle="pill" data-bs-target="#fundamentals" type="button" role="tab">
+                📚 Fundamentals
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="assets-tab" data-bs-toggle="pill" data-bs-target="#assets" type="button" role="tab">
+                💰 Asset Classes
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="trend-tab" data-bs-toggle="pill" data-bs-target="#trend" type="button" role="tab">
+                📈 Trend Following
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="research-tab" data-bs-toggle="pill" data-bs-target="#research" type="button" role="tab">
+                🔬 Research Process
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="glossary-tab" data-bs-toggle="pill" data-bs-target="#glossary" type="button" role="tab">
+                📖 Glossary
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="learnTabContent">
+
+        <!-- Tab 1: Fundamentals -->
+        <div class="tab-pane fade show active" id="fundamentals" role="tabpanel">
+            <div class="chart-container">
+                <h3 class="mb-4">Quantitative Investing Fundamentals</h3>
+
+                <div class="info-box">
+                    <h5>What is Quantitative Investing?</h5>
+                    <p>Quantitative investing uses mathematical models, statistical analysis, and algorithms to make investment decisions. Instead of relying on subjective judgment, quant strategies follow systematic rules based on data.</p>
+                </div>
+
+                <h4 class="mt-4">Key Concepts</h4>
+
+                <div class="row mt-3">
+                    <div class="col-md-6 mb-3">
+                        <div style="background: #E8F4F8; padding: 20px; border-radius: 8px; border-left: 4px solid #3498DB;">
+                            <h5 style="color: #3498DB;">📊 What is a Signal?</h5>
+                            <p>A <strong>signal</strong> is a rule that tells you when to buy or sell an asset. For example:</p>
+                            <ul>
+                                <li><strong>Buy signal (1):</strong> When price is above its 126-day moving average</li>
+                                <li><strong>Sell signal (0):</strong> When price falls below the moving average</li>
+                            </ul>
+                            <p class="mb-0">Signals turn subjective decisions into objective, repeatable rules.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div style="background: #D4EDDA; padding: 20px; border-radius: 8px; border-left: 4px solid #27AE60;">
+                            <h5 style="color: #27AE60;">🔬 What is Backtesting?</h5>
+                            <p><strong>Backtesting</strong> tests how a strategy would have performed using historical data. It answers: "If I had used this strategy over the past 20 years, what would my returns have been?"</p>
+                            <p class="mb-0"><strong>Critical:</strong> Backtests must avoid lookahead bias (using future information) and include realistic transaction costs.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div style="background: #FFF3CD; padding: 20px; border-radius: 8px; border-left: 4px solid #F39C12;">
+                            <h5 style="color: #F39C12;">⚖️ Risk vs Return</h5>
+                            <p>Higher returns usually come with higher risk. The goal is to maximize <strong>risk-adjusted returns</strong> - getting the best return per unit of risk taken.</p>
+                            <p class="mb-0"><strong>Sharpe Ratio</strong> measures this: Annual Return ÷ Volatility. Above 1.0 is excellent.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div style="background: #FFEBEB; padding: 20px; border-radius: 8px; border-left: 4px solid #E74C3C;">
+                            <h5 style="color: #E74C3C;">📉 What is Drawdown?</h5>
+                            <p><strong>Drawdown</strong> is the decline from a peak to a trough. Maximum drawdown shows your worst-case loss.</p>
+                            <p>Example: If your portfolio goes from $100 → $130 → $100, the max drawdown is -23.1% (from $130 peak to $100 trough).</p>
+                            <p class="mb-0">Lower drawdowns mean smoother, less stressful investing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="success-box mt-4">
+                    <h5>Why This Matters</h5>
+                    <p class="mb-0">Our strategy achieved a <strong>0.82 Sharpe ratio</strong> with <strong>-23.9% max drawdown</strong> over 20 years. This means strong risk-adjusted returns with controlled downside risk - exactly what quantitative investing aims to achieve.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Asset Classes -->
+        <div class="tab-pane fade" id="assets" role="tabpanel">
+            <div class="chart-container">
+                <h3 class="mb-4">Understanding Multi-Asset Diversification</h3>
+
+                <div class="warning-box">
+                    <h5>Why Multi-Asset vs Equity-Only?</h5>
+                    <p class="mb-0">Equities (stocks) provide growth but crash in bear markets. Bonds, gold, commodities, and real estate have <strong>low correlation</strong> to stocks, providing diversification. When one asset class falls, others may rise or stay flat, reducing portfolio volatility.</p>
+                </div>
+
+                <h4 class="mt-4">Our 5-Asset Universe</h4>
+
+                <table class="table table-hover mt-3">
+                    <thead style="background: #2C3E50; color: white;">
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Asset Name</th>
+                            <th>Asset Class</th>
+                            <th>Role in Portfolio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>SPY</strong></td>
+                            <td>S&P 500 ETF</td>
+                            <td>Equities</td>
+                            <td>Growth engine - captures stock market returns during bull markets</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TLT</strong></td>
+                            <td>20+ Year Treasury Bonds</td>
+                            <td>Fixed Income</td>
+                            <td>Safe haven - rallies during crises when stocks fall (negative correlation)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GLD</strong></td>
+                            <td>Gold</td>
+                            <td>Precious Metals</td>
+                            <td>Inflation hedge - performs well when currency weakens or inflation rises</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DBC</strong></td>
+                            <td>Commodities Index</td>
+                            <td>Commodities</td>
+                            <td>Real assets - tracks energy, agriculture, metals (inflation protection)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>VNQ</strong></td>
+                            <td>Real Estate (REITs)</td>
+                            <td>Real Estate</td>
+                            <td>Income + diversification - provides yield and moderate growth</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4 class="mt-4">Correlation Benefits</h4>
+                <div class="info-box">
+                    <p>When assets have <strong>low or negative correlation</strong>, they don't move together. This reduces portfolio volatility.</p>
+                    <p><strong>Example:</strong> In 2008, SPY fell -37% while TLT rose +34%. A portfolio holding both suffered far less than equity-only.</p>
+                    <p class="mb-0"><strong>Result:</strong> Our multi-asset strategy had -23.9% max drawdown vs -36.2% for equal-weight buy-and-hold.</p>
+                </div>
+
+                <h4 class="mt-4">Why Not Traditional Tactical Asset Allocation (TAA)?</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div style="background: #E8F4F8; padding: 20px; border-radius: 8px;">
+                            <h5>Traditional TAA</h5>
+                            <ul>
+                                <li>Rebalances monthly/quarterly regardless of trends</li>
+                                <li>Often uses fixed weights (60/40, equal weight)</li>
+                                <li>Stays fully invested even in bear markets</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="background: #D4EDDA; padding: 20px; border-radius: 8px;">
+                            <h5>Our Trend-Following Approach</h5>
+                            <ul>
+                                <li><strong>Dynamic allocation</strong> - exits falling assets</li>
+                                <li>Holds only assets with positive trends</li>
+                                <li>Can go defensive (bonds/gold) in bear markets</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Trend Following -->
+        <div class="tab-pane fade" id="trend" role="tabpanel">
+            <div class="chart-container">
+                <h3 class="mb-4">How Trend-Following Works</h3>
+
+                <div class="info-box">
+                    <h5>The Core Principle</h5>
+                    <p class="mb-0"><strong>Trend-following</strong> assumes that assets in motion tend to stay in motion. Rising assets continue rising (momentum), and falling assets continue falling. The strategy buys assets with positive trends and avoids those with negative trends.</p>
+                </div>
+
+                <h4 class="mt-4">Why Exponential Moving Average (EMA)?</h4>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div style="background: #FFF3CD; padding: 20px; border-radius: 8px;">
+                            <h5>Simple Moving Average (SMA)</h5>
+                            <p>Averages the last N days equally.</p>
+                            <p><strong>126-day SMA</strong> = sum of last 126 prices ÷ 126</p>
+                            <p class="mb-0"><strong>Issue:</strong> Treats 1 day ago same as 126 days ago (slow to react)</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="background: #D4EDDA; padding: 20px; border-radius: 8px;">
+                            <h5>Exponential Moving Average (EMA)</h5>
+                            <p>Gives more weight to recent prices.</p>
+                            <p><strong>126-day EMA</strong> = weighted average favoring recent data</p>
+                            <p class="mb-0"><strong>Benefit:</strong> Faster response to trend changes (+2% Sharpe improvement)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="mt-4">Why 126 Days (6 Months)?</h4>
+                <div class="warning-box">
+                    <h5>The Goldilocks Window</h5>
+                    <ul>
+                        <li><strong>Too short (30-60 days):</strong> Reacts to noise, high turnover, excessive costs</li>
+                        <li><strong>Too long (252+ days):</strong> Slow to exit crashes, misses recoveries</li>
+                        <li><strong>126 days (6 months):</strong> Filters noise while staying responsive to real trends</li>
+                    </ul>
+                    <p class="mb-0">Our optimization tested 63-378 days. <strong>126 days was optimal</strong> with Sharpe 0.82 (+12% improvement vs 252 days).</p>
+                </div>
+
+                <h4 class="mt-4">The Trading Rule</h4>
+                <div style="background: #E8F4F8; padding: 25px; border-radius: 8px; border: 3px solid #3498DB;">
+                    <h5 style="color: #3498DB;">Signal Logic</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div style="background: #27AE60; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 10px;">
+                                <h5>BUY (Signal = 1)</h5>
+                                <p class="mb-0">When: <strong>Price > EMA(126)</strong><br>
+                                Meaning: Asset is in an uptrend</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div style="background: #E74C3C; color: white; padding: 15px; border-radius: 8px; text-align: center;">
+                                <h5>SELL (Signal = 0)</h5>
+                                <p class="mb-0">When: <strong>Price < EMA(126)</strong><br>
+                                Meaning: Asset is in a downtrend</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="mt-4">Why This Works: Behavioral Finance</h4>
+                <div class="success-box">
+                    <h5>Momentum Exists Because Humans Are Slow to React</h5>
+                    <ul>
+                        <li><strong>Herding:</strong> Investors follow trends (FOMO in bull markets, panic in bears)</li>
+                        <li><strong>Anchoring:</strong> People hold losing positions too long, hoping for recovery</li>
+                        <li><strong>Information diffusion:</strong> News spreads slowly, creating persistent price trends</li>
+                    </ul>
+                    <p class="mb-0">By systematically following trends, we profit from these human biases.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Research Process -->
+        <div class="tab-pane fade" id="research" role="tabpanel">
+            <div class="chart-container">
+                <h3 class="mb-4">Research Process & Validation</h3>
+
+                <div class="warning-box">
+                    <h5>⚠️ The Overfitting Problem</h5>
+                    <p><strong>Overfitting</strong> is when a strategy is optimized so much on historical data that it won't work in the future. It's like memorizing test answers instead of learning the material.</p>
+                    <p class="mb-0"><strong>Example:</strong> "Buy SPY on the 3rd Tuesday of months ending in 'r' when VIX < 15.3" might backtest well but is clearly nonsense.</p>
+                </div>
+
+                <h4 class="mt-4">How We Avoid Overfitting</h4>
+
+                <div class="row mt-3">
+                    <div class="col-md-4 mb-3">
+                        <div style="background: #D4EDDA; padding: 20px; border-radius: 8px; height: 100%;">
+                            <h5 style="color: #27AE60;">1. Simple Rules</h5>
+                            <p>Our strategy has ONE parameter: EMA span (126 days). Simple strategies generalize better than complex ones.</p>
+                            <p class="mb-0"><strong>Complexity penalty:</strong> More rules = higher overfitting risk</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <div style="background: #E8F4F8; padding: 20px; border-radius: 8px; height: 100%;">
+                            <h5 style="color: #3498DB;">2. Robustness Testing</h5>
+                            <p>We tested EMA spans from 63-378 days. The optimal 126 days wasn't highly sensitive to small changes.</p>
+                            <p class="mb-0"><strong>Coefficient of Variation: 5.5%</strong> (low = robust)</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <div style="background: #FFF3CD; padding: 20px; border-radius: 8px; height: 100%;">
+                            <h5 style="color: #F39C12;">3. Out-of-Sample Testing</h5>
+                            <p>Strategy performs consistently in different time periods (pre-2015 vs post-2015).</p>
+                            <p class="mb-0"><strong>Walk-forward validation</strong> ensures no lookahead bias</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="mt-4">Why Trust This Backtest?</h4>
+                <div class="info-box">
+                    <h5>Realistic Assumptions</h5>
+                    <ul>
+                        <li>✅ <strong>Transaction costs included:</strong> 5 basis points per trade</li>
+                        <li>✅ <strong>Monthly rebalancing:</strong> Practical for real implementation</li>
+                        <li>✅ <strong>No lookahead bias:</strong> Signals use only past data</li>
+                        <li>✅ <strong>20-year backtest:</strong> Covers multiple market regimes (2008 crisis, COVID, 2022 bear)</li>
+                        <li>✅ <strong>Equal weight sizing:</strong> No leverage, conservative approach</li>
+                    </ul>
+                </div>
+
+                <h4 class="mt-4">Signal Method Comparison</h4>
+                <table class="table table-bordered mt-3">
+                    <thead style="background: #2C3E50; color: white;">
+                        <tr>
+                            <th>Method</th>
+                            <th>Total Return</th>
+                            <th>Sharpe Ratio</th>
+                            <th>Max Drawdown</th>
+                            <th>Why EMA Won</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: #D4EDDA;">
+                            <td><strong>EMA 126d</strong></td>
+                            <td>592.6%</td>
+                            <td><strong>0.82</strong></td>
+                            <td>-23.9%</td>
+                            <td>Best risk-adjusted returns</td>
+                        </tr>
+                        <tr>
+                            <td>SMA 252d</td>
+                            <td>482.7%</td>
+                            <td>0.71</td>
+                            <td>-24.8%</td>
+                            <td>Slower to react to trends</td>
+                        </tr>
+                        <tr>
+                            <td>Absolute Momentum</td>
+                            <td>447.3%</td>
+                            <td>0.58</td>
+                            <td>-31.2%</td>
+                            <td>Higher drawdowns</td>
+                        </tr>
+                        <tr>
+                            <td>Dual Momentum</td>
+                            <td>508.1%</td>
+                            <td>0.67</td>
+                            <td>-28.5%</td>
+                            <td>More complex, not enough benefit</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="success-box mt-4">
+                    <h5>Bottom Line</h5>
+                    <p class="mb-0">EMA 126d won because it provided the <strong>best Sharpe ratio (0.82)</strong> with controlled drawdowns. The 20-year backtest, realistic costs, and robustness testing give us confidence this strategy can work going forward.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 5: Glossary -->
+        <div class="tab-pane fade" id="glossary" role="tabpanel">
+            <div class="chart-container">
+                <h3 class="mb-4">Glossary of Terms</h3>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <h5 style="color: #3498DB;">Sharpe Ratio</h5>
+                            <p><strong>Definition:</strong> Risk-adjusted return metric</p>
+                            <p><strong>Formula:</strong> (Annual Return - Risk-Free Rate) / Volatility</p>
+                            <p><strong>Interpretation:</strong> Higher is better. >1.0 is excellent. Measures return per unit of risk.</p>
+                            <p class="mb-0"><strong>Example:</strong> Sharpe 0.82 means we earned 0.82% annual return for every 1% of volatility.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 style="color: #3498DB;">Sortino Ratio</h5>
+                            <p><strong>Definition:</strong> Like Sharpe but only penalizes downside volatility</p>
+                            <p><strong>Formula:</strong> Annual Return / Downside Deviation</p>
+                            <p><strong>Why it matters:</strong> More relevant for investors who only care about losses, not upside volatility.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 style="color: #3498DB;">Maximum Drawdown</h5>
+                            <p><strong>Definition:</strong> Largest peak-to-trough decline</p>
+                            <p><strong>Formula:</strong> (Trough Value - Peak Value) / Peak Value</p>
+                            <p class="mb-0"><strong>Example:</strong> -23.9% means the worst loss from a portfolio peak was 23.9%.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 style="color: #3498DB;">Calmar Ratio</h5>
+                            <p><strong>Definition:</strong> Return per unit of maximum drawdown</p>
+                            <p><strong>Formula:</strong> Annualized Return / Abs(Max Drawdown)</p>
+                            <p class="mb-0"><strong>Interpretation:</strong> Higher is better. Measures how much return you get for the worst-case risk.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 style="color: #3498DB;">Volatility</h5>
+                            <p><strong>Definition:</strong> Standard deviation of returns</p>
+                            <p><strong>Interpretation:</strong> Measures how much returns fluctuate. Lower = smoother.</p>
+                            <p class="mb-0"><strong>Annualized:</strong> Daily volatility × √252 trading days</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <h5 style="color: #27AE60;">Win Rate</h5>
+                            <p><strong>Definition:</strong> Percentage of days/periods with positive returns</p>
+                            <p class="mb-0"><strong>Example:</strong> 58% win rate = 58% of days had gains, 42% had losses</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 style="color: #27AE60;">CAGR (Compound Annual Growth Rate)</h5>
+                            <p><strong>Definition:</strong> Annualized return over the full period</p>
+                            <p><strong>Formula:</strong> (Ending Value / Starting Value)^(1/Years) - 1</p>
+                            <p class="mb-0">Smooths out year-to-year volatility to show average yearly growth.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 style="color: #27AE60;">EMA (Exponential Moving Average)</h5>
+                            <p><strong>Definition:</strong> Weighted average giving more weight to recent prices</p>
+                            <p><strong>vs SMA:</strong> EMA reacts faster to trend changes</p>
+                            <p class="mb-0"><strong>126-day EMA:</strong> Roughly 6-month trend indicator</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 style="color: #27AE60;">Momentum</h5>
+                            <p><strong>Definition:</strong> Tendency of assets to continue their current trend</p>
+                            <p class="mb-0"><strong>Trend-following exploits momentum:</strong> Buy rising assets, avoid falling ones</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 style="color: #F39C12;">Correlation</h5>
+                            <p><strong>Definition:</strong> How much two assets move together (-1 to +1)</p>
+                            <p><strong>+1:</strong> Perfect positive (always move together)</p>
+                            <p><strong>0:</strong> No relationship</p>
+                            <p><strong>-1:</strong> Perfect negative (move opposite)</p>
+                            <p class="mb-0"><strong>Diversification works best with low/negative correlation</strong></p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 style="color: #F39C12;">Overfitting</h5>
+                            <p><strong>Definition:</strong> Optimizing too much on past data, losing future predictability</p>
+                            <p class="mb-0"><strong>Avoid by:</strong> Simple rules, robustness testing, out-of-sample validation</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

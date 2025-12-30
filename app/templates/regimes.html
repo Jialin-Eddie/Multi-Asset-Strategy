@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Market Regimes - Multi-Asset Strategy{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">Market Regime Analysis</h1>
+        <p class="page-subtitle">How the strategy performs across bull, bear, and sideways markets</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Regime Classification Explanation -->
+    <div class="info-box">
+        <h5>📊 Regime Classification Methodology</h5>
+        <p class="mb-2">Market regimes are classified based on S&P 500 (SPY) price action:</p>
+        <div class="row">
+            <div class="col-md-4">
+                <div style="background: #D4EDDA; padding: 15px; border-radius: 8px; text-align: center;">
+                    <strong style="color: #27AE60;">📈 Bull Market</strong>
+                    <p class="mb-0" style="font-size: 0.9rem; margin-top: 5px;">Price >20% above 252-day low</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div style="background: #FFEBEB; padding: 15px; border-radius: 8px; text-align: center;">
+                    <strong style="color: #E74C3C;">📉 Bear Market</strong>
+                    <p class="mb-0" style="font-size: 0.9rem; margin-top: 5px;">Price <-20% below 252-day high</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div style="background: #F8F9FA; padding: 15px; border-radius: 8px; text-align: center;">
+                    <strong style="color: #95A5A6;">↔️ Sideways Market</strong>
+                    <p class="mb-0" style="font-size: 0.9rem; margin-top: 5px;">Neither bull nor bear</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Regime Timeline Chart -->
+    <div class="chart-container">
+        <h4 class="mb-3">Strategy Performance Across Market Regimes</h4>
+        <p class="text-muted">Green shading = Bull markets | Red shading = Bear markets | Gray shading = Sideways markets</p>
+        {{ regime_chart|safe }}
+    </div>
+
+    <!-- Performance by Regime Table -->
+    <div class="chart-container">
+        <h4 class="mb-3">Performance Breakdown by Regime</h4>
+        {% if regime_performance is not none and regime_performance|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead style="background: #2C3E50; color: white;">
+                    <tr>
+                        <th>Market Regime</th>
+                        <th>Days</th>
+                        <th>Total Return</th>
+                        <th>Annualized Return</th>
+                        <th>Sharpe Ratio</th>
+                        <th>Sortino Ratio</th>
+                        <th>Max Drawdown</th>
+                        <th>Calmar Ratio</th>
+                        <th>Win Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for _, row in regime_performance.iterrows() %}
+                    <tr>
+                        <td>
+                            {% if row.regime == 'bull' %}
+                            <span style="background: #D4EDDA; padding: 5px 12px; border-radius: 20px; color: #27AE60; font-weight: bold;">
+                                📈 Bull Market
+                            </span>
+                            {% elif row.regime == 'bear' %}
+                            <span style="background: #FFEBEB; padding: 5px 12px; border-radius: 20px; color: #E74C3C; font-weight: bold;">
+                                📉 Bear Market
+                            </span>
+                            {% else %}
+                            <span style="background: #F8F9FA; padding: 5px 12px; border-radius: 20px; color: #95A5A6; font-weight: bold;">
+                                ↔️ Sideways
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.0f"|format(row.days) }}</td>
+                        <td class="{% if row.total_return > 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                            {{ "%+.1f"|format(row.total_return * 100) }}%
+                        </td>
+                        <td>{{ "%.2f"|format(row.annualized_return * 100) }}%</td>
+                        <td class="{% if row.sharpe_ratio > 1.0 %}text-success fw-bold{% elif row.sharpe_ratio > 0.5 %}text-primary{% else %}text-warning{% endif %}">
+                            {{ "%.2f"|format(row.sharpe_ratio) }}
+                        </td>
+                        <td>{{ "%.2f"|format(row.sortino_ratio) }}</td>
+                        <td class="{% if row.max_drawdown > -0.15 %}text-success{% elif row.max_drawdown > -0.25 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ "%.1f"|format(row.max_drawdown * 100) }}%
+                        </td>
+                        <td>{{ "%.2f"|format(row.calmar_ratio) }}</td>
+                        <td>{{ "%.1f"|format(row.win_rate * 100) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No regime performance data available.</p>
+        {% endif %}
+    </div>
+
+    <!-- Key Insights -->
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="success-box">
+                <h5>✅ Bull Market Performance</h5>
+                <p>Strategy captures most of the upside during bull markets while maintaining positive Sharpe ratios. Trend-following allows us to ride winners.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="warning-box">
+                <h5>🛡️ Bear Market Protection</h5>
+                <p>The strategy's ability to exit falling assets and rotate into bonds/gold provides significant downside protection compared to buy-and-hold.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="info-box">
+                <h5>📊 Sideways Market Behavior</h5>
+                <p>During choppy, directionless markets, the strategy may experience whipsaws. However, transaction costs are controlled through monthly rebalancing.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Regime Indicator -->
+    <div class="chart-container mt-4">
+        <h4 class="mb-3">Current Market Regime</h4>
+        {% if regimes is not none and regimes|length > 0 %}
+        {% set current_regime = regimes.iloc[-1] %}
+        <div class="row">
+            <div class="col-md-12">
+                {% if current_regime == 'bull' %}
+                <div style="background: #D4EDDA; border-left: 5px solid #27AE60; padding: 30px; border-radius: 8px; text-align: center;">
+                    <h2 style="color: #27AE60; margin-bottom: 10px;">📈 BULL MARKET</h2>
+                    <p style="font-size: 1.2rem; margin-bottom: 0;">S&P 500 is in an uptrend (>20% above 252-day low). Strategy is likely holding equity positions.</p>
+                </div>
+                {% elif current_regime == 'bear' %}
+                <div style="background: #FFEBEB; border-left: 5px solid #E74C3C; padding: 30px; border-radius: 8px; text-align: center;">
+                    <h2 style="color: #E74C3C; margin-bottom: 10px;">📉 BEAR MARKET</h2>
+                    <p style="font-size: 1.2rem; margin-bottom: 0;">S&P 500 is in a downtrend (<-20% below 252-day high). Strategy likely defensive (bonds/gold/cash).</p>
+                </div>
+                {% else %}
+                <div style="background: #F8F9FA; border-left: 5px solid #95A5A6; padding: 30px; border-radius: 8px; text-align: center;">
+                    <h2 style="color: #95A5A6; margin-bottom: 10px;">↔️ SIDEWAYS MARKET</h2>
+                    <p style="font-size: 1.2rem; margin-bottom: 0;">S&P 500 is range-bound. Strategy adapts to individual asset trends.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Regime Statistics Summary -->
+    <div class="chart-container mt-4">
+        <h4 class="mb-3">Regime Distribution (2005-2025)</h4>
+        <div class="row">
+            {% if regime_performance is not none %}
+            {% set total_days = regime_performance['days'].sum() %}
+            {% for _, row in regime_performance.iterrows() %}
+            <div class="col-md-4 mb-3">
+                <div style="background: white; border: 2px solid {% if row.regime == 'bull' %}#27AE60{% elif row.regime == 'bear' %}#E74C3C{% else %}#95A5A6{% endif %}; padding: 20px; border-radius: 8px; text-align: center;">
+                    <h5>{% if row.regime == 'bull' %}📈 Bull{% elif row.regime == 'bear' %}📉 Bear{% else %}↔️ Sideways{% endif %}</h5>
+                    <div style="font-size: 2.5rem; font-weight: bold; color: {% if row.regime == 'bull' %}#27AE60{% elif row.regime == 'bear' %}#E74C3C{% else %}#95A5A6{% endif %};">
+                        {{ "%.0f"|format(row.days / total_days * 100) }}%
+                    </div>
+                    <p class="mb-0">{{ "%.0f"|format(row.days) }} days</p>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

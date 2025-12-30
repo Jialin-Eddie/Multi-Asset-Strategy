@@ -172,7 +172,23 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="/">Dashboard</a>
+                        <a class="nav-link {% if request.endpoint == 'landing.index' %}active{% endif %}" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="learnDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Learn
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="learnDropdown">
+                            <li><a class="dropdown-item" href="/learn#fundamentals">Fundamentals</a></li>
+                            <li><a class="dropdown-item" href="/learn#assets">Asset Classes</a></li>
+                            <li><a class="dropdown-item" href="/learn#trend">Trend Following</a></li>
+                            <li><a class="dropdown-item" href="/learn#research">Research Process</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/learn#glossary">Glossary</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'performance.index' %}active{% endif %}" href="/performance">Performance</a>
@@ -180,7 +196,24 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'methodology.index' %}active{% endif %}" href="/methodology">Methodology</a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="advancedDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Advanced
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="advancedDropdown">
+                            <li><a class="dropdown-item" href="/lab">🔬 Interactive Lab</a></li>
+                            <li><a class="dropdown-item" href="/regimes">📊 Market Regimes</a></li>
+                            <li><a class="dropdown-item" href="/variants">🔄 Strategy Variants</a></li>
+                        </ul>
+                    </li>
                 </ul>
+                <!-- Beginner/Pro Mode Toggle -->
+                <div class="form-check form-switch ms-3">
+                    <input class="form-check-input" type="checkbox" id="proModeToggle" style="cursor: pointer;">
+                    <label class="form-check-label text-white" for="proModeToggle" style="cursor: pointer; font-size: 0.9rem;" id="modeLabel">
+                        Beginner Mode
+                    </label>
+                </div>
             </div>
         </div>
     </nav>
@@ -198,6 +231,42 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Beginner/Pro Mode Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const proModeToggle = document.getElementById('proModeToggle');
+            const modeLabel = document.getElementById('modeLabel');
+
+            // Load saved mode from localStorage
+            const isProMode = localStorage.getItem('proMode') === 'true';
+            proModeToggle.checked = isProMode;
+            updateModeLabel(isProMode);
+
+            // Handle toggle change
+            proModeToggle.addEventListener('change', function() {
+                const newProMode = this.checked;
+                localStorage.setItem('proMode', newProMode);
+                updateModeLabel(newProMode);
+
+                // Apply mode-specific visibility (future enhancement)
+                applyModeStyles(newProMode);
+            });
+
+            function updateModeLabel(isProMode) {
+                modeLabel.textContent = isProMode ? 'Pro Mode' : 'Beginner Mode';
+            }
+
+            function applyModeStyles(isProMode) {
+                // Future: Hide/show advanced sections based on mode
+                // For now, just visual indicator
+                document.body.setAttribute('data-mode', isProMode ? 'pro' : 'beginner');
+            }
+
+            // Initialize mode on page load
+            applyModeStyles(isProMode);
+        });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

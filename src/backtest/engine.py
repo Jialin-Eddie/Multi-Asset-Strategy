@@ -295,6 +295,132 @@ def backtest_strategy(
     return results
 
 
+def classify_regimes(
+    spy_prices: pd.Series,
+    bull_threshold: float = 0.20,
+    bear_threshold: float = -0.20
+) -> pd.Series:
+    """
+    Classify market regimes based on S&P 500 price action.
+
+    Parameters
+    ----------
+    spy_prices : pd.Series
+        S&P 500 (SPY) price series.
+    bull_threshold : float, default 0.20
+        Threshold for bull market (>20% above 252-day low).
+    bear_threshold : float, default -0.20
+        Threshold for bear market (<-20% below 252-day high).
+
+    Returns
+    -------
+    pd.Series
+        Regime classification ('bull', 'bear', or 'sideways') for each date.
+    """
+    rolling_max = spy_prices.rolling(252).max()
+    rolling_min = spy_prices.rolling(252).min()
+
+    drawdown_from_peak = (spy_prices - rolling_max) / rolling_max
+    rally_from_trough = (spy_prices - rolling_min) / rolling_min
+
+    regime = pd.Series('sideways', index=spy_prices.index)
+    regime[rally_from_trough > bull_threshold] = 'bull'
+    regime[drawdown_from_peak < bear_threshold] = 'bear'
+
+    return regime
+
+
+def performance_by_regime(returns: pd.Series, regimes: pd.Series) -> pd.DataFrame:
+    """
+    Calculate performance statistics by market regime.
+
+    Parameters
+    ----------
+    returns : pd.Series
+        Daily returns.
+    regimes : pd.Series
+        Regime classification for each date.
+
+    Returns
+    -------
+    pd.DataFrame
+        Performance metrics by regime with columns:
+        - regime: Regime type ('bull', 'bear', 'sideways')
+        - days: Number of trading days in regime
+        - total_return, annualized_return, sharpe_ratio, etc.
+    """
+    results = []
+    for regime_type in ['bull', 'bear', 'sideways']:
+        regime_mask = regimes == regime_type
+        regime_returns = returns[regime_mask]
+
+        if len(regime_returns) > 0:
+            metrics = calculate_performance_metrics(regime_returns)
+            metrics['regime'] = regime_type
+            metrics['days'] = len(regime_returns)
+            results.append(metrics)
+
+    return pd.DataFrame(results)
+
+
+def extract_trade_log(signals: pd.DataFrame, prices: pd.DataFrame) -> pd.DataFrame:
+    """
+    Extract trade-level log from signal changes.
+
+    Parameters
+    ----------
+    signals : pd.DataFrame
+        Trading signals (0 or 1) for each asset.
+    prices : pd.DataFrame
+        Asset prices.
+
+    Returns
+    -------
+    pd.DataFrame
+        Trade log with columns:
+        - entry_date: Trade entry date
+        - exit_date: Trade exit date
+        - asset: Asset ticker
+        - entry_price: Entry price
+        - exit_price: Exit price
+        - return: Trade return (%)
+        - days_held: Number of days held
+    """
+    trades = []
+
+    for asset in signals.columns:
+        asset_signals = signals[asset]
+        changes = asset_signals.diff()
+
+        # Entry: 0 → 1
+        entries = changes[changes == 1].index
+        # Exit: 1 → 0
+        exits = changes[changes == -1].index
+
+        # Match entries to exits
+        for entry_date in entries:
+            # Find next exit after this entry
+            exit_dates = exits[exits > entry_date]
+            if len(exit_dates) > 0:
+                exit_date = exit_dates[0]
+                entry_price = prices.loc[entry_date, asset]
+                exit_price = prices.loc[exit_date, asset]
+                ret = (exit_price - entry_price) / entry_price
+                days_held = (exit_date - entry_date).days
+
+                trades.append({
+                    'entry_date': entry_date,
+                    'exit_date': exit_date,
+                    'asset': asset,
+                    'entry_price': entry_price,
+                    'exit_price': exit_price,
+                    'return': ret,
+                    'days_held': days_held
+                })
+
+    return pd.DataFrame(trades)
+
+
 if __name__ == "__main__":
     # Example usage
     from pathlib import Path

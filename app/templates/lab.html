@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Interactive Lab - Multi-Asset Strategy{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">Interactive Lab</h1>
+        <p class="page-subtitle">Trade-level analysis and performance drill-down</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Coming Soon Banner -->
+    <div class="info-box">
+        <h5>🔬 Interactive Lab Features (MVP)</h5>
+        <p class="mb-2"><strong>Currently Available:</strong></p>
+        <ul class="mb-2">
+            <li>✅ Trade-Level Drill-Down - See every entry/exit with returns and holding periods</li>
+            <li>✅ Trade Statistics - Win rate, average win/loss, best/worst trades</li>
+        </ul>
+        <p class="mb-0"><strong>Coming in Future Iterations:</strong> Custom date range backtests, parameter sensitivity scanner, stress tests, Monte Carlo simulation</p>
+    </div>
+
+    {% if stats %}
+    <!-- Aggregate Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-label">Total Trades</div>
+                <div class="metric-value neutral">{{ stats.total_trades }}</div>
+                <div class="metric-change text-muted">Since 2006</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-label">Avg Holding Period</div>
+                <div class="metric-value neutral">{{ "%.0f"|format(stats.avg_holding_period) }} days</div>
+                <div class="metric-change text-muted">~{{ "%.1f"|format(stats.avg_holding_period / 30) }} months</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-label">Win Rate</div>
+                <div class="metric-value {% if stats.win_rate > 50 %}positive{% else %}negative{% endif %}">{{ "%.1f"|format(stats.win_rate) }}%</div>
+                <div class="metric-change text-muted">{{ "%.0f"|format(stats.total_trades * stats.win_rate / 100) }} winners</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-label">Avg Win / Avg Loss</div>
+                <div class="metric-value neutral">{{ "%.1f"|format(stats.avg_win) }}% / {{ "%.1f"|format(stats.avg_loss) }}%</div>
+                <div class="metric-change text-muted">Profit factor</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Best and Worst Trades -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="success-box">
+                <h5>🏆 Best Trade</h5>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Asset:</strong> {{ stats.best_trade.asset }}<br>
+                        <strong>Entry:</strong> {{ stats.best_trade.entry_date.strftime('%Y-%m-%d') }}<br>
+                        <strong>Exit:</strong> {{ stats.best_trade.exit_date.strftime('%Y-%m-%d') }}
+                    </div>
+                    <div class="col-6">
+                        <strong>Return:</strong> <span class="text-success">+{{ "%.1f"|format(stats.best_trade['return'] * 100) }}%</span><br>
+                        <strong>Days Held:</strong> {{ stats.best_trade.days_held }}<br>
+                        <strong>Entry Price:</strong> ${{ "%.2f"|format(stats.best_trade.entry_price) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="warning-box">
+                <h5>📉 Worst Trade</h5>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Asset:</strong> {{ stats.worst_trade.asset }}<br>
+                        <strong>Entry:</strong> {{ stats.worst_trade.entry_date.strftime('%Y-%m-%d') }}<br>
+                        <strong>Exit:</strong> {{ stats.worst_trade.exit_date.strftime('%Y-%m-%d') }}
+                    </div>
+                    <div class="col-6">
+                        <strong>Return:</strong> <span class="text-danger">{{ "%.1f"|format(stats.worst_trade['return'] * 100) }}%</span><br>
+                        <strong>Days Held:</strong> {{ stats.worst_trade.days_held }}<br>
+                        <strong>Entry Price:</strong> ${{ "%.2f"|format(stats.worst_trade.entry_price) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Trade Log Table -->
+    <div class="chart-container">
+        <h4 class="mb-3">Complete Trade Log</h4>
+        {% if trade_log is not none and trade_log|length > 0 %}
+        <p class="text-muted">All {{ trade_log|length }} trades from 2006-2025. Click column headers to sort.</p>
+        <div class="table-responsive">
+            <table class="table table-hover table-sm" id="tradeLogTable">
+                <thead style="background: #2C3E50; color: white; position: sticky; top: 0;">
+                    <tr>
+                        <th>Entry Date</th>
+                        <th>Exit Date</th>
+                        <th>Asset</th>
+                        <th>Entry Price</th>
+                        <th>Exit Price</th>
+                        <th>Return (%)</th>
+                        <th>Days Held</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for _, trade in trade_log.iterrows() %}
+                    <tr>
+                        <td>{{ trade.entry_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ trade.exit_date.strftime('%Y-%m-%d') }}</td>
+                        <td><span class="badge bg-primary">{{ trade.asset }}</span></td>
+                        <td>${{ "%.2f"|format(trade.entry_price) }}</td>
+                        <td>${{ "%.2f"|format(trade.exit_price) }}</td>
+                        <td class="{% if trade['return'] > 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                            {{ "%+.1f"|format(trade['return'] * 100) }}%
+                        </td>
+                        <td>{{ trade.days_held }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No trade log data available.</p>
+        {% endif %}
+    </div>
+
+    <!-- Trade Distribution by Asset -->
+    {% if trade_log is not none and trade_log|length > 0 %}
+    <div class="chart-container mt-4">
+        <h4 class="mb-3">Trade Distribution by Asset</h4>
+        <div class="row">
+            {% for asset in ['SPY', 'TLT', 'GLD', 'DBC', 'VNQ'] %}
+            {% set asset_trades = trade_log[trade_log.asset == asset] %}
+            {% if asset_trades|length > 0 %}
+            {% set asset_wins = asset_trades[asset_trades['return'] > 0] %}
+            <div class="col-md-2 mb-3">
+                <div style="background: white; border: 2px solid #3498DB; padding: 15px; border-radius: 8px; text-align: center;">
+                    <h5>{{ asset }}</h5>
+                    <div style="font-size: 1.8rem; font-weight: bold; color: #3498DB;">{{ asset_trades|length }}</div>
+                    <small>trades</small>
+                    <hr style="margin: 10px 0;">
+                    <div>
+                        <small>Win Rate:</small><br>
+                        <strong>{{ "%.0f"|format((asset_wins|length) / (asset_trades|length) * 100) }}%</strong>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- DataTables JS for sorting/filtering -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#tradeLogTable').DataTable({
+        order: [[0, 'desc']],  // Sort by entry date descending
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        dom: 'lfrtip'
+    });
+});
+</script>
+{% endblock %}

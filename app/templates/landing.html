@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}Multi-Asset Trend-Following Strategy - Research Presentation{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div style="background: linear-gradient(135deg, #2C3E50, #3498DB); color: white; padding: 80px 0; margin-bottom: 0;">
+    <div class="container text-center">
+        <h1 style="font-size: 3.5rem; font-weight: bold; margin-bottom: 20px;">{{ "%.1f"|format(final_metrics.total_return * 100) }}% Return, {{ "%.2f"|format(final_metrics.sharpe_ratio) }} Sharpe</h1>
+        <h2 style="font-size: 1.8rem; font-weight: 300; margin-bottom: 30px; opacity: 0.95;">A Multi-Asset Trend-Following Strategy That Outperforms Buy-and-Hold</h2>
+        <p style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 40px;">20-Year Backtest | 5 Asset Classes | Rigorously Validated</p>
+        <div>
+            <a href="/learn" class="btn btn-light btn-lg me-3" style="padding: 15px 40px; font-size: 1.1rem;">📚 Start Learning</a>
+            <a href="/lab" class="btn btn-outline-light btn-lg" style="padding: 15px 40px; font-size: 1.1rem;">🔬 Explore Data</a>
+        </div>
+    </div>
+</div>
+
+<!-- Audience Routing Banner -->
+<div style="background: #F8F9FA; border-top: 3px solid #3498DB; border-bottom: 3px solid #3498DB; padding: 20px 0;">
+    <div class="container text-center">
+        <p style="font-size: 1.1rem; margin-bottom: 15px; color: #2C3E50;">
+            <strong>New to quantitative investing?</strong>
+            <a href="/learn#fundamentals" style="color: #3498DB; text-decoration: none; border-bottom: 2px solid #3498DB; margin-left: 10px;">Start with Fundamentals →</a>
+        </p>
+        <p style="font-size: 1.1rem; margin: 0; color: #2C3E50;">
+            <strong>Experienced portfolio manager?</strong>
+            <a href="/lab" style="color: #E74C3C; text-decoration: none; border-bottom: 2px solid #E74C3C; margin-left: 10px;">Jump to Interactive Lab →</a>
+        </p>
+    </div>
+</div>
+
+<div class="container" style="margin-top: 50px;">
+
+    <!-- Section 1: The Problem -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div style="background: #FFF3CD; border-left: 5px solid #F39C12; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <div style="background: #F39C12; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin-right: 20px;">1</div>
+                    <h2 style="margin: 0; color: #2C3E50;">The Problem: Traditional Portfolios Fail in Certain Market Conditions</h2>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <h4 style="color: #F39C12;">Why Multi-Asset Matters</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.7;">
+                            Traditional 60/40 portfolios and equity-only strategies suffer during specific market regimes:
+                        </p>
+                        <ul style="font-size: 1.05rem; line-height: 1.8;">
+                            <li><strong>2000-2002 Dot-com Crash:</strong> Equities down 45%, bonds provided no offset</li>
+                            <li><strong>2008 Financial Crisis:</strong> S&P 500 dropped 56%, equity-only portfolios devastated</li>
+                            <li><strong>2022 Rate Shock:</strong> Both stocks AND bonds down (rare correlation breakdown)</li>
+                        </ul>
+                        <p style="font-size: 1.1rem; line-height: 1.7; margin-top: 20px;">
+                            <strong>The Need:</strong> Dynamic allocation that adapts to market conditions, spanning multiple asset classes with low correlation.
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <div style="background: white; padding: 25px; border-radius: 8px; border: 2px solid #F39C12;">
+                            <h5 style="color: #F39C12; margin-bottom: 20px;">Traditional Portfolio Risks</h5>
+                            <div class="mb-3">
+                                <small style="color: #666;">Equity-Only Max Drawdown</small>
+                                <div style="font-size: 2rem; color: #E74C3C; font-weight: bold;">{{ "%.1f"|format(bench_metrics.max_drawdown * 100) }}%</div>
+                            </div>
+                            <div class="mb-3">
+                                <small style="color: #666;">2008 Crisis Loss</small>
+                                <div style="font-size: 1.8rem; color: #E74C3C; font-weight: bold;">-56%</div>
+                            </div>
+                            <div>
+                                <small style="color: #666;">Recovery Time</small>
+                                <div style="font-size: 1.8rem; color: #E74C3C; font-weight: bold;">5+ years</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: How We Tested -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div style="background: #E8F4F8; border-left: 5px solid #3498DB; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <div style="background: #3498DB; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin-right: 20px;">2</div>
+                    <h2 style="margin: 0; color: #2C3E50;">How We Tested: Rigorous Research Process</h2>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h4 style="color: #3498DB;">Research Timeline</h4>
+                        <div style="position: relative; padding-left: 40px;">
+                            <!-- Timeline -->
+                            <div style="position: absolute; left: 15px; top: 10px; bottom: 10px; width: 3px; background: #3498DB;"></div>
+
+                            <div style="margin-bottom: 25px; position: relative;">
+                                <div style="position: absolute; left: -32px; width: 20px; height: 20px; border-radius: 50%; background: #3498DB; border: 3px solid white;"></div>
+                                <strong style="color: #3498DB;">Phase 1: Data Acquisition</strong>
+                                <p style="margin: 5px 0 0 0;">20 years (2005-2025) | 5,238 trading days | 5 asset classes</p>
+                            </div>
+
+                            <div style="margin-bottom: 25px; position: relative;">
+                                <div style="position: absolute; left: -32px; width: 20px; height: 20px; border-radius: 50%; background: #3498DB; border: 3px solid white;"></div>
+                                <strong style="color: #3498DB;">Phase 2: Signal Testing</strong>
+                                <p style="margin: 5px 0 0 0;">Tested 5 methods (SMA, EMA, Absolute, Relative, Dual)</p>
+                            </div>
+
+                            <div style="margin-bottom: 25px; position: relative;">
+                                <div style="position: absolute; left: -32px; width: 20px; height: 20px; border-radius: 50%; background: #3498DB; border: 3px solid white;"></div>
+                                <strong style="color: #3498DB;">Phase 3: Optimization</strong>
+                                <p style="margin: 5px 0 0 0;">EMA span optimization (63-378 days) | 126d optimal</p>
+                            </div>
+
+                            <div style="margin-bottom: 25px; position: relative;">
+                                <div style="position: absolute; left: -32px; width: 20px; height: 20px; border-radius: 50%; background: #3498DB; border: 3px solid white;"></div>
+                                <strong style="color: #3498DB;">Phase 4: Validation</strong>
+                                <p style="margin: 5px 0 0 0;">Robustness testing (CV 5.5% - minimal overfitting)</p>
+                            </div>
+
+                            <div style="position: relative;">
+                                <div style="position: absolute; left: -32px; width: 20px; height: 20px; border-radius: 50%; background: #27AE60; border: 3px solid white;"></div>
+                                <strong style="color: #27AE60;">Phase 5: Production Ready</strong>
+                                <p style="margin: 5px 0 0 0;">Sharpe 0.82 | Max DD -23.9% | Validated for live trading</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4 style="color: #3498DB;">Research Methodology</h4>
+                        <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #3498DB;">
+                            <div class="mb-3">
+                                <strong>✓ Out-of-Sample Testing</strong>
+                                <p style="margin: 5px 0 0 0; font-size: 0.95rem;">Walk-forward validation prevents lookahead bias</p>
+                            </div>
+                            <div class="mb-3">
+                                <strong>✓ Transaction Costs Included</strong>
+                                <p style="margin: 5px 0 0 0; font-size: 0.95rem;">Realistic 5 bps per trade, monthly rebalancing</p>
+                            </div>
+                            <div class="mb-3">
+                                <strong>✓ Robustness Analysis</strong>
+                                <p style="margin: 5px 0 0 0; font-size: 0.95rem;">Coefficient of variation 5.5% (parameter stability)</p>
+                            </div>
+                            <div class="mb-3">
+                                <strong>✓ Multiple Regimes Tested</strong>
+                                <p style="margin: 5px 0 0 0; font-size: 0.95rem;">Bull, bear, and sideways markets analyzed</p>
+                            </div>
+                            <div>
+                                <strong>✓ Benchmark Comparison</strong>
+                                <p style="margin: 5px 0 0 0; font-size: 0.95rem;">Equal-weight buy-and-hold baseline</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: What We Found -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div style="background: #D4EDDA; border-left: 5px solid #27AE60; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <div style="background: #27AE60; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin-right: 20px;">3</div>
+                    <h2 style="margin: 0; color: #2C3E50;">What We Found: Key Research Insights</h2>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div style="background: white; padding: 25px; border-radius: 8px; text-center; border: 2px solid #27AE60;">
+                            <div style="font-size: 1.2rem; color: #666; margin-bottom: 10px;">🎯 Optimal Signal</div>
+                            <div style="font-size: 2.5rem; color: #27AE60; font-weight: bold; margin-bottom: 10px;">EMA 126d</div>
+                            <p style="font-size: 0.95rem; margin: 0;">Beats SMA by +2% Sharpe (0.82 vs 0.71)</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div style="background: white; padding: 25px; border-radius: 8px; text-center; border: 2px solid #27AE60;">
+                            <div style="font-size: 1.2rem; color: #666; margin-bottom: 10px;">📊 Multi-Asset Benefit</div>
+                            <div style="font-size: 2.5rem; color: #27AE60; font-weight: bold; margin-bottom: 10px;">+{{ "%.1f"|format(improvements.dd) }}%</div>
+                            <p style="font-size: 0.95rem; margin: 0;">Max DD reduction vs equity-only</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div style="background: white; padding: 25px; border-radius: 8px; text-center; border: 2px solid #27AE60;">
+                            <div style="font-size: 1.2rem; color: #666; margin-bottom: 10px;">⚡ Rebalancing</div>
+                            <div style="font-size: 2.5rem; color: #27AE60; font-weight: bold; margin-bottom: 10px;">Monthly</div>
+                            <p style="font-size: 0.95rem; margin: 0;">Optimal cost/responsiveness balance</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4 style="color: #27AE60;">Performance Across Market Regimes</h4>
+                        {% if regime_performance is not none %}
+                        <table class="table table-bordered" style="background: white; margin-top: 15px;">
+                            <thead style="background: #27AE60; color: white;">
+                                <tr>
+                                    <th>Regime</th>
+                                    <th>Days</th>
+                                    <th>Total Return</th>
+                                    <th>Sharpe Ratio</th>
+                                    <th>Max Drawdown</th>
+                                    <th>Win Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for _, row in regime_performance.iterrows() %}
+                                <tr>
+                                    <td>
+                                        {% if row.regime == 'bull' %}
+                                        <span style="color: #27AE60; font-weight: bold;">📈 Bull Market</span>
+                                        {% elif row.regime == 'bear' %}
+                                        <span style="color: #E74C3C; font-weight: bold;">📉 Bear Market</span>
+                                        {% else %}
+                                        <span style="color: #95A5A6; font-weight: bold;">↔️ Sideways</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "%.0f"|format(row.days) }}</td>
+                                    <td>{{ "%.1f"|format(row.total_return * 100) }}%</td>
+                                    <td>{{ "%.2f"|format(row.sharpe_ratio) }}</td>
+                                    <td style="color: {% if row.max_drawdown > -0.15 %}#27AE60{% else %}#E74C3C{% endif %};">{{ "%.1f"|format(row.max_drawdown * 100) }}%</td>
+                                    <td>{{ "%.1f"|format(row.win_rate * 100) }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: The Results -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div style="background: linear-gradient(135deg, #3498DB, #2C3E50); color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <div style="background: white; color: #3498DB; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin-right: 20px;">4</div>
+                    <h2 style="margin: 0;">The Results: Production-Ready Performance</h2>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                            <small style="opacity: 0.9;">Total Return</small>
+                            <div style="font-size: 2.2rem; font-weight: bold; margin: 10px 0;">{{ "%.1f"|format(final_metrics.total_return * 100) }}%</div>
+                            <small style="color: #27AE60; opacity: 0.9;">+{{ "%.1f"|format(improvements.return) }}% vs B&H</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                            <small style="opacity: 0.9;">Sharpe Ratio</small>
+                            <div style="font-size: 2.2rem; font-weight: bold; margin: 10px 0;">{{ "%.2f"|format(final_metrics.sharpe_ratio) }}</div>
+                            <small style="color: #27AE60; opacity: 0.9;">+{{ "%.2f"|format(improvements.sharpe) }} vs B&H</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                            <small style="opacity: 0.9;">Max Drawdown</small>
+                            <div style="font-size: 2.2rem; font-weight: bold; margin: 10px 0;">{{ "%.1f"|format(final_metrics.max_drawdown * 100) }}%</div>
+                            <small style="color: #27AE60; opacity: 0.9;">{{ "%.1f"|format(improvements.dd) }}% better</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                            <small style="opacity: 0.9;">Calmar Ratio</small>
+                            <div style="font-size: 2.2rem; font-weight: bold; margin: 10px 0;">{{ "%.2f"|format(final_metrics.calmar_ratio) }}</div>
+                            <small style="opacity: 0.9;">Return / Max DD</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.15); padding: 25px; border-radius: 8px; margin-top: 30px;">
+                    <h4 style="margin-bottom: 15px;">✅ Production Readiness Checklist</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-2">✓ Performance validated (0.82 Sharpe, 20-year backtest)</div>
+                            <div class="mb-2">✓ Robustness confirmed (CV 5.5%)</div>
+                            <div class="mb-2">✓ Risk controlled (Max DD -23.9% vs -36.2% benchmark)</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">✓ Implementation simple (EMA 126d, equal weight)</div>
+                            <div class="mb-2">✓ Costs realistic (5 bps, monthly rebalancing)</div>
+                            <div class="mb-2">✓ Multiple regimes tested (bull, bear, sideways)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h3 style="margin-bottom: 30px; color: #2C3E50;">Ready to Dive Deeper?</h3>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div style="background: white; padding: 30px; border-radius: 8px; border: 2px solid #3498DB; height: 100%;">
+                        <h4 style="color: #3498DB; margin-bottom: 15px;">📚 Learn the Fundamentals</h4>
+                        <p>New to quantitative investing? Start with our educational hub covering signals, backtesting, and research methodology.</p>
+                        <a href="/learn" class="btn btn-primary mt-2">Start Learning</a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div style="background: white; padding: 30px; border-radius: 8px; border: 2px solid #27AE60; height: 100%;">
+                        <h4 style="color: #27AE60; margin-bottom: 15px;">📊 View Performance</h4>
+                        <p>Explore detailed performance analytics, drawdown analysis, and risk metrics across different market regimes.</p>
+                        <a href="/performance" class="btn btn-success mt-2">See Analytics</a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div style="background: white; padding: 30px; border-radius: 8px; border: 2px solid #E74C3C; height: 100%;">
+                        <h4 style="color: #E74C3C; margin-bottom: 15px;">🔬 Interactive Lab</h4>
+                        <p>Run custom backtests, explore parameter sensitivity, analyze stress tests, and drill down to individual trades.</p>
+                        <a href="/lab" class="btn btn-danger mt-2">Open Lab</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

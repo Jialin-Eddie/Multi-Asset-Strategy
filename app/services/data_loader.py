@@ -94,7 +94,23 @@ class DataLoader:
             except FileNotFoundError:
                 self.data['signal_comparison'] = None
 
-            print("✓ Data loaded successfully")
+            # Pre-compute regime classification
+            from src.backtest.engine import classify_regimes, performance_by_regime, extract_trade_log
+
+            spy_prices = prices['SPY']
+            self.data['regimes'] = classify_regimes(spy_prices)
+            self.data['regime_performance'] = performance_by_regime(
+                final_backtest['returns'],
+                self.data['regimes']
+            )
+
+            # Pre-compute trade log
+            self.data['trade_log'] = extract_trade_log(
+                final_signals,
+                prices
+            )
+
+            print("Data loaded successfully")
 
         except Exception as e:
             print(f"Error loading data: {e}")
@@ -130,6 +146,18 @@ class DataLoader:
     def get_signal_comparison(self) -> pd.DataFrame:
         """Get signal method comparison results."""
         return self.data.get('signal_comparison')
+
+    def get_regimes(self) -> pd.Series:
+        """Get market regime classification."""
+        return self.data.get('regimes')
+
+    def get_regime_performance(self) -> pd.DataFrame:
+        """Get performance metrics by regime."""
+        return self.data.get('regime_performance')
+
+    def get_trade_log(self) -> pd.DataFrame:
+        """Get trade-level log."""
+        return self.data.get('trade_log')
 
 
 # Global data loader instance

@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Strategy Variants - Multi-Asset Strategy{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">Strategy Variants</h1>
+        <p class="page-subtitle">Alternative configurations and when to use them</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Coming Soon Banner -->
+    <div class="info-box">
+        <h5>🔄 Strategy Variants (MVP)</h5>
+        <p class="mb-2"><strong>Currently Available:</strong></p>
+        <ul class="mb-2">
+            <li>✅ Strategy Comparison Table - Performance across different EMA spans</li>
+            <li>✅ Use Case Guidance - When to choose each variant</li>
+        </ul>
+        <p class="mb-0"><strong>Coming in Future Iterations:</strong> Decision tree flowchart, adaptive switching logic, downside protection add-ons, live performance tracking</p>
+    </div>
+
+    <!-- Strategy Comparison Table -->
+    <div class="chart-container">
+        <h4 class="mb-3">Strategy Variant Comparison</h4>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead style="background: #2C3E50; color: white;">
+                    <tr>
+                        <th>Variant</th>
+                        <th>Description</th>
+                        <th>Total Return</th>
+                        <th>Sharpe Ratio</th>
+                        <th>Max Drawdown</th>
+                        <th>Avg Turnover</th>
+                        <th>Best For</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for variant in variants %}
+                    <tr {% if variant.name == 'Core Strategy' %}style="background: #D4EDDA;"{% endif %}>
+                        <td>
+                            <strong>{{ variant.name }}</strong>
+                            {% if variant.name == 'Core Strategy' %}
+                            <span class="badge bg-success ms-2">Recommended</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ variant.description }}</td>
+                        <td class="{% if variant.total_return > 5.0 %}text-success{% elif variant.total_return > 3.0 %}text-primary{% else %}text-warning{% endif %} fw-bold">
+                            {{ "%.1f"|format(variant.total_return * 100) }}%
+                        </td>
+                        <td class="{% if variant.sharpe > 0.8 %}text-success fw-bold{% elif variant.sharpe > 0.6 %}text-primary{% else %}text-warning{% endif %}">
+                            {{ "%.2f"|format(variant.sharpe) }}
+                        </td>
+                        <td class="{% if variant.max_dd > -0.25 %}text-success{% elif variant.max_dd > -0.35 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ "%.1f"|format(variant.max_dd * 100) }}%
+                        </td>
+                        <td>{{ "%.0f"|format(variant.turnover * 100) }}%</td>
+                        <td>{{ variant.best_for }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- When to Use Each Variant -->
+    <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+            <div style="background: #D4EDDA; border-left: 5px solid #27AE60; padding: 25px; border-radius: 8px; height: 100%;">
+                <h5 style="color: #27AE60;">✅ Use Core Strategy When:</h5>
+                <ul>
+                    <li>You want the best risk-adjusted returns (highest Sharpe)</li>
+                    <li>Transaction costs are moderate (5-10 bps)</li>
+                    <li>You're comfortable with monthly rebalancing</li>
+                    <li>This is your default choice - balanced approach</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div style="background: #E8F4F8; border-left: 5px solid #3498DB; padding: 25px; border-radius: 8px; height: 100%;">
+                <h5 style="color: #3498DB;">🐢 Use Conservative Strategy When:</h5>
+                <ul>
+                    <li>Transaction costs are high (>10 bps)</li>
+                    <li>You prefer smoother, slower trend changes</li>
+                    <li>Lower turnover is priority (29% vs 37%)</li>
+                    <li>You're willing to sacrifice some return for stability</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div style="background: #FFF3CD; border-left: 5px solid #F39C12; padding: 25px; border-radius: 8px; height: 100%;">
+                <h5 style="color: #F39C12;">⚡ Use Aggressive Strategy When:</h5>
+                <ul>
+                    <li>Markets are trending strongly (bull or bear)</li>
+                    <li>You want faster response to trend changes</li>
+                    <li>Transaction costs are low (<5 bps)</li>
+                    <li>Higher turnover (48%) is acceptable</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div style="background: #FFEBEB; border-left: 5px solid #E74C3C; padding: 25px; border-radius: 8px; height: 100%;">
+                <h5 style="color: #E74C3C;">📊 Buy & Hold Reference:</h5>
+                <ul>
+                    <li>Baseline benchmark for comparison</li>
+                    <li>Minimal turnover (5% - rebalancing only)</li>
+                    <li>No trend-following, stays fully invested</li>
+                    <li>Higher drawdowns, lower Sharpe than active strategies</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Trade-offs -->
+    <div class="chart-container mt-4">
+        <h4 class="mb-3">Key Trade-offs</h4>
+        <div class="row">
+            <div class="col-md-4">
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #3498DB; text-align: center; height: 100%;">
+                    <h5 style="color: #3498DB;">⚖️ Responsiveness vs Stability</h5>
+                    <p><strong>Shorter EMA (63d):</strong> Faster reaction, more trades</p>
+                    <p><strong>Longer EMA (189d):</strong> Smoother trends, fewer trades</p>
+                    <p class="mb-0"><strong>126d is optimal</strong> balance</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #27AE60; text-align: center; height: 100%;">
+                    <h5 style="color: #27AE60;">💰 Return vs Risk</h5>
+                    <p><strong>Higher returns:</strong> Often come with higher volatility</p>
+                    <p><strong>Lower drawdowns:</strong> May sacrifice some upside</p>
+                    <p class="mb-0"><strong>Sharpe ratio</strong> measures this trade-off</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #F39C12; text-align: center; height: 100%;">
+                    <h5 style="color: #F39C12;">💸 Costs vs Performance</h5>
+                    <p><strong>Higher turnover:</strong> More responsive but costlier</p>
+                    <p><strong>Lower turnover:</strong> Lower costs but slower</p>
+                    <p class="mb-0"><strong>Monthly rebalancing</strong> balances both</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Decision Guide -->
+    <div class="chart-container mt-4">
+        <h4 class="mb-3">Quick Decision Guide</h4>
+        <div style="background: #F8F9FA; padding: 25px; border-radius: 8px; border: 2px solid #2C3E50;">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Choose Conservative if:</h5>
+                    <ul>
+                        <li>✓ Transaction costs > 10 bps</li>
+                        <li>✓ Prefer lower turnover</li>
+                        <li>✓ Want smoother equity curve</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>Choose Aggressive if:</h5>
+                    <ul>
+                        <li>✓ Transaction costs < 5 bps</li>
+                        <li>✓ Markets are trending strongly</li>
+                        <li>✓ Want faster response time</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <h5 style="color: #27AE60;">Otherwise, use <strong>Core Strategy (EMA 126d)</strong> 👍</h5>
+                <p class="mb-0">Best overall risk-adjusted returns, moderate turnover, proven across 20 years</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Future Enhancements -->
+    <div class="success-box mt-4">
+        <h5>🔮 Future Enhancements</h5>
+        <p class="mb-2">In later iterations, we'll add:</p>
+        <ul class="mb-0">
+            <li><strong>Adaptive Switching:</strong> Automatically switch between variants based on market volatility or trend strength</li>
+            <li><strong>Risk Parity Variant:</strong> Volatility-weighted positions instead of equal weight</li>
+            <li><strong>Dual Momentum:</strong> Combine absolute and relative momentum signals</li>
+            <li><strong>Downside Protection:</strong> VIX triggers, drawdown circuit breakers</li>
+            <li><strong>Live Tracking:</strong> Monitor performance of all variants in real-time</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
