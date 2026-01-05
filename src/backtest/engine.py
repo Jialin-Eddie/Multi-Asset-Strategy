@@ -421,6 +421,84 @@ def extract_trade_log(signals: pd.DataFrame, prices: pd.DataFrame) -> pd.DataFra
     return pd.DataFrame(trades)
 
 
+def calculate_var(returns: pd.Series, confidence: float = 0.95) -> float:
+    """
+    Calculate Value at Risk (VaR) at a given confidence level.
+
+    VaR represents the maximum loss at the given confidence level.
+    E.g., 95% VaR means only 5% of returns are worse than this value.
+
+    Parameters:
+    -----------
+    returns : pd.Series
+        Daily returns
+    confidence : float
+        Confidence level (default 0.95 for 95% VaR)
+
+    Returns:
+    --------
+    float : VaR value (negative number representing loss threshold)
+    """
+    return np.percentile(returns, (1 - confidence) * 100)
+
+
+def calculate_cvar(returns: pd.Series, confidence: float = 0.95) -> float:
+    """
+    Calculate Conditional Value at Risk (CVaR), also known as Expected Shortfall.
+
+    CVaR is the expected loss given that losses exceed the VaR threshold.
+    It represents the average of the worst (1-confidence)% of returns.
+
+    Parameters:
+    -----------
+    returns : pd.Series
+        Daily returns
+    confidence : float
+        Confidence level (default 0.95 for 95% CVaR)
+
+    Returns:
+    --------
+    float : CVaR value (expected loss in worst (1-confidence)% of cases)
+    """
+    var = calculate_var(returns, confidence)
+    # CVaR is the mean of all returns worse than VaR
+    return returns[returns <= var].mean()
+
+
+def calculate_rolling_var_cvar(returns: pd.Series, window: int = 252,
+                                confidence_levels: list = [0.95, 0.99]) -> pd.DataFrame:
+    """
+    Calculate rolling VaR and CVaR over time for multiple confidence levels.
+
+    Parameters:
+    -----------
+    returns : pd.Series
+        Daily returns
+    window : int
+        Rolling window size in days (default 252 = 1 year)
+    confidence_levels : list
+        List of confidence levels to calculate (default [0.95, 0.99])
+
+    Returns:
+    --------
+    pd.DataFrame : Rolling VaR and CVaR series for each confidence level
+    """
+    results = pd.DataFrame(index=returns.index)
+
+    for conf in confidence_levels:
+        conf_pct = int(conf * 100)
+        # Calculate rolling VaR
+        results[f'VaR_{conf_pct}%'] = returns.rolling(window).apply(
+            lambda x: calculate_var(x, conf), raw=False
+        )
+        # Calculate rolling CVaR
+        results[f'CVaR_{conf_pct}%'] = returns.rolling(window).apply(
+            lambda x: calculate_cvar(x, conf), raw=False
+        )
+
+    return results
+
+
 if __name__ == "__main__":
     # Example usage
     from pathlib import Path

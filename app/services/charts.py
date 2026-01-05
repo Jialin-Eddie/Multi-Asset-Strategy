@@ -353,3 +353,261 @@ def create_regime_timeline_chart(spy_prices, regimes, strategy_value):
     )
 
     return fig.to_html(full_html=False, include_plotlyjs='cdn')
+
+
+def create_var_cvar_chart(var_cvar_data):
+    """Create rolling VaR and CVaR chart with multiple confidence levels."""
+    fig = go.Figure()
+
+    # Define colors for different confidence levels
+    colors = {
+        'VaR_95%': '#3498DB',
+        'CVaR_95%': '#E74C3C',
+        'VaR_99%': '#9B59B6',
+        'CVaR_99%': '#E67E22'
+    }
+
+    # Add traces for each VaR/CVaR series
+    for col in var_cvar_data.columns:
+        fig.add_trace(go.Scatter(
+            x=var_cvar_data.index,
+            y=var_cvar_data[col] * 100,  # Convert to percentage
+            name=col,
+            line=dict(
+                color=colors.get(col, '#95A5A6'),
+                width=2 if 'VaR' in col else 1.5,
+                dash='solid' if 'VaR' in col else 'dash'
+            ),
+            hovertemplate=f'<b>{col}</b><br>Date: %{{x|%Y-%m-%d}}<br>Loss: %{{y:.2f}}%<extra></extra>'
+        ))
+
+    fig.update_layout(
+        title='Rolling Value at Risk (VaR) and Conditional VaR (CVaR)',
+        xaxis_title='Date',
+        yaxis_title='Daily Loss Threshold (%)',
+        hovermode='x unified',
+        template='plotly_white',
+        height=450,
+        showlegend=True,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+    )
+
+    # Add reference line at 0
+    fig.add_hline(y=0, line_dash="dot", line_color="gray", opacity=0.5)
+
+    return fig.to_html(full_html=False, include_plotlyjs='cdn')
+
+
+def create_stress_test_chart(stress_tests):
+    """Create comparison chart for stress test scenarios."""
+    # Filter out None values
+    valid_tests = {k: v for k, v in stress_tests.items() if v is not None}
+
+    if not valid_tests:
+        return "<p>No stress test data available</p>"
+
+    scenarios = []
+    strategy_returns = []
+    benchmark_returns = []
+    strategy_dds = []
+    benchmark_dds = []
+
+    for key, data in valid_tests.items():
+        scenarios.append(data['name'])
+        strategy_returns.append(data['strategy_return'] * 100)
+        benchmark_returns.append(data['benchmark_return'] * 100)
+        strategy_dds.append(data['strategy_max_dd'] * 100)
+        benchmark_dds.append(data['benchmark_max_dd'] * 100)
+
+    # Create subplots: Returns and Drawdowns
+    from plotly.subplots import make_subplots
+    fig = make_subplots(
+        rows=1, cols=2,
+        subplot_titles=('Total Returns During Crisis', 'Maximum Drawdown'),
+        specs=[[{"type": "bar"}, {"type": "bar"}]]
+    )
+
+    # Returns comparison
+    fig.add_trace(
+        go.Bar(
+            name='Strategy',
+            x=scenarios,
+            y=strategy_returns,
+            marker_color='#3498DB',
+            text=[f'{r:.1f}%' for r in strategy_returns],
+            textposition='outside',
+            hovertemplate='<b>Strategy</b><br>%{x}<br>Return: %{y:.2f}%<extra></extra>'
+        ),
+        row=1, col=1
+    )
+
+    fig.add_trace(
+        go.Bar(
+            name='Benchmark',
+            x=scenarios,
+            y=benchmark_returns,
+            marker_color='#95A5A6',
+            text=[f'{r:.1f}%' for r in benchmark_returns],
+            textposition='outside',
+            hovertemplate='<b>Benchmark</b><br>%{x}<br>Return: %{y:.2f}%<extra></extra>'
+        ),
+        row=1, col=1
+    )
+
+    # Drawdown comparison
+    fig.add_trace(
+        go.Bar(
+            name='Strategy',
+            x=scenarios,
+            y=strategy_dds,
+            marker_color='#3498DB',
+            text=[f'{dd:.1f}%' for dd in strategy_dds],
+            textposition='outside',
+            showlegend=False,
+            hovertemplate='<b>Strategy</b><br>%{x}<br>Max DD: %{y:.2f}%<extra></extra>'
+        ),
+        row=1, col=2
+    )
+
+    fig.add_trace(
+        go.Bar(
+            name='Benchmark',
+            x=scenarios,
+            y=benchmark_dds,
+            marker_color='#95A5A6',
+            text=[f'{dd:.1f}%' for dd in benchmark_dds],
+            textposition='outside',
+            showlegend=False,
+            hovertemplate='<b>Benchmark</b><br>%{x}<br>Max DD: %{y:.2f}%<extra></extra>'
+        ),
+        row=1, col=2
+    )
+
+    fig.update_layout(
+        title_text='Stress Test Performance: How the Strategy Handled Major Market Crises',
+        height=500,
+        template='plotly_white',
+        barmode='group',
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+    )
+
+    fig.update_yaxes(title_text="Return (%)", row=1, col=1)
+    fig.update_yaxes(title_text="Drawdown (%)", row=1, col=2)
+
+    return fig.to_html(full_html=False, include_plotlyjs='cdn')
+
+
+def create_ema_sensitivity_chart(ema_sensitivity_data):
+    """Create parameter sensitivity chart showing performance vs EMA window size."""
+    if ema_sensitivity_data is None or len(ema_sensitivity_data) == 0:
+        return "<p>No EMA sensitivity data available</p>"
+
+    from plotly.subplots import make_subplots
+
+    # Create subplots for different metrics
+    fig = make_subplots(
+        rows=2, cols=2,
+        subplot_titles=('Sharpe Ratio vs EMA Window', 'Total Return vs EMA Window',
+                       'Max Drawdown vs EMA Window', 'Win Rate vs EMA Window'),
+        specs=[[{"secondary_y": False}, {"secondary_y": False}],
+               [{"secondary_y": False}, {"secondary_y": False}]]
+    )
+
+    # Sharpe Ratio
+    fig.add_trace(
+        go.Scatter(
+            x=ema_sensitivity_data['window'],
+            y=ema_sensitivity_data['sharpe_ratio'],
+            mode='lines+markers',
+            name='Sharpe Ratio',
+            line=dict(color='#3498DB', width=3),
+            marker=dict(size=8),
+            hovertemplate='<b>EMA Window: %{x} days</b><br>Sharpe: %{y:.3f}<extra></extra>'
+        ),
+        row=1, col=1
+    )
+
+    # Total Return
+    fig.add_trace(
+        go.Scatter(
+            x=ema_sensitivity_data['window'],
+            y=ema_sensitivity_data['total_return'] * 100,
+            mode='lines+markers',
+            name='Total Return',
+            line=dict(color='#27AE60', width=3),
+            marker=dict(size=8),
+            hovertemplate='<b>EMA Window: %{x} days</b><br>Return: %{y:.1f}%<extra></extra>'
+        ),
+        row=1, col=2
+    )
+
+    # Max Drawdown
+    fig.add_trace(
+        go.Scatter(
+            x=ema_sensitivity_data['window'],
+            y=ema_sensitivity_data['max_drawdown'] * 100,
+            mode='lines+markers',
+            name='Max Drawdown',
+            line=dict(color='#E74C3C', width=3),
+            marker=dict(size=8),
+            hovertemplate='<b>EMA Window: %{x} days</b><br>Max DD: %{y:.1f}%<extra></extra>'
+        ),
+        row=2, col=1
+    )
+
+    # Win Rate
+    fig.add_trace(
+        go.Scatter(
+            x=ema_sensitivity_data['window'],
+            y=ema_sensitivity_data['win_rate'] * 100,
+            mode='lines+markers',
+            name='Win Rate',
+            line=dict(color='#9B59B6', width=3),
+            marker=dict(size=8),
+            hovertemplate='<b>EMA Window: %{x} days</b><br>Win Rate: %{y:.1f}%<extra></extra>'
+        ),
+        row=2, col=2
+    )
+
+    # Highlight the optimal window (126 days)
+    optimal_window = 126
+    for row in range(1, 3):
+        for col in range(1, 3):
+            fig.add_vline(
+                x=optimal_window,
+                line_dash="dash",
+                line_color="green",
+                opacity=0.5,
+                row=row, col=col
+            )
+
+    fig.update_layout(
+        title_text='Parameter Sensitivity: How Strategy Performance Varies with EMA Window Size',
+        height=700,
+        template='plotly_white',
+        showlegend=False
+    )
+
+    fig.update_xaxes(title_text="EMA Window (days)", row=1, col=1)
+    fig.update_xaxes(title_text="EMA Window (days)", row=1, col=2)
+    fig.update_xaxes(title_text="EMA Window (days)", row=2, col=1)
+    fig.update_xaxes(title_text="EMA Window (days)", row=2, col=2)
+
+    fig.update_yaxes(title_text="Sharpe Ratio", row=1, col=1)
+    fig.update_yaxes(title_text="Total Return (%)", row=1, col=2)
+    fig.update_yaxes(title_text="Max Drawdown (%)", row=2, col=1)
+    fig.update_yaxes(title_text="Win Rate (%)", row=2, col=2)
+
+    return fig.to_html(full_html=False, include_plotlyjs='cdn')

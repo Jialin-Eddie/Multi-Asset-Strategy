@@ -130,6 +130,65 @@
     </div>
     {% endif %}
 
+    <!-- Parameter Sensitivity Analysis -->
+    {% if ema_sensitivity_chart %}
+    <div class="chart-container mt-5">
+        <h4 class="mb-3">Parameter Sensitivity Analysis</h4>
+        <p class="text-muted">How robust is the strategy to changes in the EMA window parameter?</p>
+
+        <!-- Sensitivity Chart -->
+        {{ ema_sensitivity_chart|safe }}
+
+        <!-- Data Table -->
+        {% if ema_sensitivity_data is not none and ema_sensitivity_data|length > 0 %}
+        <div class="mt-4">
+            <h5 class="mb-3">Performance Across All Tested EMA Windows</h5>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead style="background: #2C3E50; color: white;">
+                        <tr>
+                            <th>EMA Window (days)</th>
+                            <th>Approx. Months</th>
+                            <th>Sharpe Ratio</th>
+                            <th>Total Return</th>
+                            <th>Max Drawdown</th>
+                            <th>Win Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for _, row in ema_sensitivity_data.iterrows() %}
+                        <tr {% if row.window == 126 %}style="background: #D4EDDA; font-weight: bold;"{% endif %}>
+                            <td>{{ "%.0f"|format(row.window) }}{% if row.window == 126 %} <span class="badge bg-success">Optimal</span>{% endif %}</td>
+                            <td>{{ "%.1f"|format(row.months) }}</td>
+                            <td class="{% if row.sharpe_ratio > 0.8 %}text-success fw-bold{% elif row.sharpe_ratio > 0.7 %}text-primary{% else %}text-warning{% endif %}">
+                                {{ "%.3f"|format(row.sharpe_ratio) }}
+                            </td>
+                            <td>{{ "%.1f"|format(row.total_return * 100) }}%</td>
+                            <td class="{% if row.max_drawdown > -0.25 %}text-success{% elif row.max_drawdown > -0.30 %}text-warning{% else %}text-danger{% endif %}">
+                                {{ "%.1f"|format(row.max_drawdown * 100) }}%
+                            </td>
+                            <td>{{ "%.1f"|format(row.win_rate * 100) }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="info-box mt-3">
+            <p class="mb-2"><strong>🔍 Key Observations:</strong></p>
+            <ul class="mb-0">
+                <li><strong>Robust peak around 126 days:</strong> Performance is strong across the 105-168 day range, showing the strategy isn't overfitted to a narrow parameter</li>
+                <li><strong>Too short (63-84 days):</strong> Faster response but more whipsaws, lower Sharpe ratios due to excessive trading</li>
+                <li><strong>Too long (252-378 days):</strong> Slower response misses trend changes, lower returns and higher drawdowns</li>
+                <li><strong>126-day sweet spot:</strong> Balances noise filtering (reduces false signals) with responsiveness (captures trends early)</li>
+                <li><strong>Stability across range:</strong> Sharpe ratios stay above 0.70 for windows 84-210 days, demonstrating parameter robustness</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Production Readiness -->
     <div class="success-box">
         <h5><strong>✅ Production Readiness Checklist</strong></h5>

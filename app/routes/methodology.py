@@ -1,6 +1,7 @@
 """Methodology explanation routes."""
 from flask import Blueprint, render_template
 from app.services.data_loader import get_data_loader
+from app.services.charts import create_ema_sensitivity_chart
 
 bp = Blueprint('methodology', __name__, url_prefix='/methodology')
 
@@ -13,6 +14,10 @@ def index():
     # Get optimization results if available
     ema_opt = loader.get_optimization_results()
     signal_comp = loader.get_signal_comparison()
+
+    # Get EMA sensitivity analysis
+    ema_sensitivity_data = loader.get_ema_sensitivity()
+    ema_sensitivity_chart = create_ema_sensitivity_chart(ema_sensitivity_data) if ema_sensitivity_data is not None else None
 
     # Asset universe information
     assets = [
@@ -112,5 +117,7 @@ def index():
         timeline=timeline,
         decisions=decisions,
         ema_opt=ema_opt,
-        signal_comp=signal_comp
+        signal_comp=signal_comp,
+        ema_sensitivity_chart=ema_sensitivity_chart,
+        ema_sensitivity_data=ema_sensitivity_data
     )

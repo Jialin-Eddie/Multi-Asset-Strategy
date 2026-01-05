@@ -147,5 +147,23 @@
         </div>
         {% endif %}
     </div>
+
+    <!-- Risk Analytics: VaR/CVaR Section -->
+    {% if var_cvar_chart %}
+    <div class="chart-container">
+        <h4 class="mb-3">Risk Analytics: Value at Risk (VaR) and Conditional VaR</h4>
+        <p class="text-muted">Daily loss thresholds at 95% and 99% confidence levels (rolling 252-day window)</p>
+        {{ var_cvar_chart|safe }}
+        <div class="info-box mt-3">
+            <p class="mb-2"><strong>Understanding VaR and CVaR:</strong></p>
+            <ul class="mb-0">
+                <li><strong>VaR (Value at Risk):</strong> Maximum expected daily loss at given confidence level. E.g., 95% VaR = -2.5% means only 5% of days have losses worse than 2.5%</li>
+                <li><strong>CVaR (Conditional VaR / Expected Shortfall):</strong> Average loss when losses exceed the VaR threshold. Captures tail risk better than VaR alone</li>
+                <li><strong>99% vs 95%:</strong> 99% metrics capture more extreme tail events (worst 1% of days vs worst 5%)</li>
+                <li><strong>Interpretation:</strong> Lower absolute values = less downside risk. CVaR is always worse than VaR (deeper losses in tail scenarios)</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

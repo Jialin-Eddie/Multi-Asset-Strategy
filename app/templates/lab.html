@@ -18,8 +18,9 @@
         <ul class="mb-2">
             <li>✅ Trade-Level Drill-Down - See every entry/exit with returns and holding periods</li>
             <li>✅ Trade Statistics - Win rate, average win/loss, best/worst trades</li>
+            <li>✅ Stress Tests - How the strategy performed in 3 major market crises</li>
         </ul>
-        <p class="mb-0"><strong>Coming in Future Iterations:</strong> Custom date range backtests, parameter sensitivity scanner, stress tests, Monte Carlo simulation</p>
+        <p class="mb-0"><strong>Coming in Future Iterations:</strong> Custom date range backtests, parameter sensitivity scanner, Monte Carlo simulation</p>
     </div>
 
     {% if stats %}
@@ -160,6 +161,216 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Stress Test Section -->
+    {% if stress_tests %}
+    <div class="chart-container mt-5">
+        <h4 class="mb-3">🔥 Stress Tests: Strategy Performance in Major Market Crises</h4>
+        <p class="text-muted">How did the strategy protect capital during the worst market events of the past 20 years?</p>
+
+        <!-- Stress Test Chart -->
+        {{ stress_test_chart|safe }}
+
+        <!-- Detailed Scenario Breakdown -->
+        <div class="row mt-4">
+            {% for key, scenario in stress_tests.items() %}
+            {% if scenario %}
+            <div class="col-md-4 mb-4">
+                {% if 'COVID' in scenario.name %}
+                <div style="background: #FFEBEB; border-left: 5px solid #E74C3C; padding: 20px; border-radius: 8px; height: 100%;">
+                    <h5 style="color: #E74C3C;">📉 {{ scenario.name }}</h5>
+                {% elif '2008' in scenario.name %}
+                <div style="background: #FFF3CD; border-left: 5px solid #F39C12; padding: 20px; border-radius: 8px; height: 100%;">
+                    <h5 style="color: #F39C12;">💥 {{ scenario.name }}</h5>
+                {% else %}
+                <div style="background: #E8F4F8; border-left: 5px solid #3498DB; padding: 20px; border-radius: 8px; height: 100%;">
+                    <h5 style="color: #3498DB;">📊 {{ scenario.name }}</h5>
+                {% endif %}
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">{{ scenario.description }}</p>
+                    <hr>
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted">Period:</small><br>
+                            <strong style="font-size: 0.85rem;">{{ scenario.days }} days</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">SPY Drawdown:</small><br>
+                            <strong style="font-size: 0.85rem; color: #E74C3C;">{{ "%.1f"|format(scenario.spy_max_dd * 100) }}%</strong>
+                        </div>
+                    </div>
+                    <hr style="margin: 10px 0;">
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted">Strategy Return:</small><br>
+                            <strong class="{% if scenario.strategy_return > 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1.2rem;">
+                                {{ "%+.1f"|format(scenario.strategy_return * 100) }}%
+                            </strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Strategy Max DD:</small><br>
+                            <strong class="{% if scenario.strategy_max_dd > -0.15 %}text-success{% else %}text-warning{% endif %}" style="font-size: 1.2rem;">
+                                {{ "%.1f"|format(scenario.strategy_max_dd * 100) }}%
+                            </strong>
+                        </div>
+                    </div>
+                    <hr style="margin: 10px 0;">
+                    <div class="text-center">
+                        <small class="text-muted">Outperformance vs Benchmark:</small><br>
+                        <strong class="{% if scenario.outperformance > 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1.5rem;">
+                            {{ "%+.1f"|format(scenario.outperformance * 100) }}%
+                        </strong>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="info-box mt-3">
+            <p class="mb-2"><strong>💡 Key Insights from Stress Tests:</strong></p>
+            <ul class="mb-0">
+                <li><strong>Trend-following works in crises:</strong> The strategy's EMA signals help exit positions before deep drawdowns occur</li>
+                <li><strong>Multi-asset diversification:</strong> When stocks crash, the strategy can rotate to bonds (TLT) or gold (GLD)</li>
+                <li><strong>2022 Rate Shock:</strong> Hardest scenario for 60/40 portfolios (stocks AND bonds down). Strategy reduced exposure to both</li>
+                <li><strong>Cash is a position:</strong> During bear markets, the strategy goes to cash (0% allocation) to preserve capital</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Custom Date Range Backtest -->
+    <div class="chart-container mt-5">
+        <h4 class="mb-3">🔬 Custom Date Range Backtest</h4>
+        <p class="text-muted">Test the strategy on any historical period. Minimum 50 days required.</p>
+
+        <div class="row">
+            <div class="col-md-3">
+                <label for="startDate" class="form-label"><strong>Start Date</strong></label>
+                <input type="date" class="form-control" id="startDate" min="2006-02-03" max="2025-12-31" value="2020-01-01">
+                <small class="text-muted">Earliest: 2006-02-03</small>
+            </div>
+            <div class="col-md-3">
+                <label for="endDate" class="form-label"><strong>End Date</strong></label>
+                <input type="date" class="form-control" id="endDate" min="2006-02-03" max="2025-12-31" value="2023-12-31">
+                <small class="text-muted">Latest: 2025-12-31</small>
+            </div>
+            <div class="col-md-3">
+                <label for="emaWindow" class="form-label"><strong>EMA Window (days)</strong></label>
+                <input type="number" class="form-control" id="emaWindow" min="21" max="378" value="126" step="21">
+                <small class="text-muted">Default: 126 days</small>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button id="runBacktestBtn" class="btn btn-primary btn-lg w-100">
+                    <span id="btnText">Run Backtest</span>
+                    <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2" style="display: none;"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div id="backtestResults" style="display: none;" class="mt-4">
+            <hr>
+            <h5 class="mb-3">Results</h5>
+
+            <!-- Date Range Info -->
+            <div class="alert alert-info">
+                <strong>Period:</strong> <span id="resultPeriod"></span> (<span id="resultDays"></span> trading days)
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-label">Strategy Return</div>
+                        <div class="metric-value" id="strategyReturn"></div>
+                        <div class="metric-change text-muted">Sharpe: <span id="strategySharpe"></span></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-label">Benchmark Return</div>
+                        <div class="metric-value neutral" id="benchmarkReturn"></div>
+                        <div class="metric-change text-muted">Sharpe: <span id="benchmarkSharpe"></span></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-label">Outperformance</div>
+                        <div class="metric-value" id="outperformance"></div>
+                        <div class="metric-change text-muted">Sharpe Diff: <span id="sharpeDiff"></span></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="metric-card">
+                        <div class="metric-label">Max Drawdown</div>
+                        <div class="metric-value" id="maxDrawdown"></div>
+                        <div class="metric-change text-muted">Benchmark: <span id="benchmarkDD"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Metrics Table -->
+            <div class="table-responsive mt-3">
+                <table class="table table-sm table-bordered">
+                    <thead style="background: #2C3E50; color: white;">
+                        <tr>
+                            <th>Metric</th>
+                            <th>Strategy</th>
+                            <th>Benchmark</th>
+                            <th>Difference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Total Return</strong></td>
+                            <td id="detailStratReturn"></td>
+                            <td id="detailBenchReturn"></td>
+                            <td id="detailReturnDiff"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Annualized Return</strong></td>
+                            <td id="detailStratAnnRet"></td>
+                            <td id="detailBenchAnnRet"></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sharpe Ratio</strong></td>
+                            <td id="detailStratSharpe"></td>
+                            <td id="detailBenchSharpe"></td>
+                            <td id="detailSharpeDiff"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sortino Ratio</strong></td>
+                            <td id="detailStratSortino"></td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Max Drawdown</strong></td>
+                            <td id="detailStratDD"></td>
+                            <td id="detailBenchDD"></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Calmar Ratio</strong></td>
+                            <td id="detailStratCalmar"></td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Win Rate</strong></td>
+                            <td id="detailWinRate"></td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div id="backtestError" class="alert alert-danger mt-4" style="display: none;"></div>
+    </div>
 </div>
 
 <!-- DataTables JS for sorting/filtering -->
@@ -176,6 +387,109 @@ $(document).ready(function() {
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         dom: 'lfrtip'
     });
+
+    // Custom backtest handler
+    $('#runBacktestBtn').click(function() {
+        const startDate = $('#startDate').val();
+        const endDate = $('#endDate').val();
+        const emaWindow = $('#emaWindow').val();
+
+        // Validation
+        if (!startDate || !endDate) {
+            $('#backtestError').text('Please select both start and end dates').show();
+            return;
+        }
+
+        if (new Date(startDate) >= new Date(endDate)) {
+            $('#backtestError').text('Start date must be before end date').show();
+            return;
+        }
+
+        // Show loading state
+        $('#btnText').text('Running...');
+        $('#btnSpinner').show();
+        $('#runBacktestBtn').prop('disabled', true);
+        $('#backtestResults').hide();
+        $('#backtestError').hide();
+
+        // Make AJAX request
+        $.ajax({
+            url: '/lab/custom-backtest',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                start_date: startDate,
+                end_date: endDate,
+                ema_window: parseInt(emaWindow)
+            }),
+            success: function(data) {
+                if (data.success) {
+                    displayResults(data);
+                    $('#backtestResults').show();
+                } else {
+                    $('#backtestError').text(data.error || 'Unknown error occurred').show();
+                }
+            },
+            error: function(xhr) {
+                const error = xhr.responseJSON?.error || 'Failed to run backtest. Please try again.';
+                $('#backtestError').text(error).show();
+            },
+            complete: function() {
+                // Reset button state
+                $('#btnText').text('Run Backtest');
+                $('#btnSpinner').hide();
+                $('#runBacktestBtn').prop('disabled', false);
+            }
+        });
+    });
+
+    function displayResults(data) {
+        // Date range info
+        $('#resultPeriod').text(data.date_range.start + ' to ' + data.date_range.end);
+        $('#resultDays').text(data.date_range.total_days);
+
+        // Metric cards
+        const stratReturn = data.strategy.total_return * 100;
+        const benchReturn = data.benchmark.total_return * 100;
+        const outperf = data.outperformance.return * 100;
+
+        $('#strategyReturn').text((stratReturn >= 0 ? '+' : '') + stratReturn.toFixed(1) + '%')
+            .removeClass('positive negative').addClass(stratReturn >= 0 ? 'positive' : 'negative');
+        $('#strategySharpe').text(data.strategy.sharpe_ratio.toFixed(2));
+
+        $('#benchmarkReturn').text((benchReturn >= 0 ? '+' : '') + benchReturn.toFixed(1) + '%');
+        $('#benchmarkSharpe').text(data.benchmark.sharpe_ratio.toFixed(2));
+
+        $('#outperformance').text((outperf >= 0 ? '+' : '') + outperf.toFixed(1) + '%')
+            .removeClass('positive negative').addClass(outperf >= 0 ? 'positive' : 'negative');
+        $('#sharpeDiff').text((data.outperformance.sharpe >= 0 ? '+' : '') + data.outperformance.sharpe.toFixed(2));
+
+        const stratDD = data.strategy.max_drawdown * 100;
+        const benchDD = data.benchmark.max_drawdown * 100;
+        $('#maxDrawdown').text(stratDD.toFixed(1) + '%')
+            .removeClass('positive negative').addClass(stratDD > -15 ? 'positive' : 'negative');
+        $('#benchmarkDD').text(benchDD.toFixed(1) + '%');
+
+        // Detailed table
+        $('#detailStratReturn').text((stratReturn >= 0 ? '+' : '') + stratReturn.toFixed(1) + '%');
+        $('#detailBenchReturn').text((benchReturn >= 0 ? '+' : '') + benchReturn.toFixed(1) + '%');
+        $('#detailReturnDiff').text((outperf >= 0 ? '+' : '') + outperf.toFixed(1) + '%')
+            .css('color', outperf >= 0 ? '#27AE60' : '#E74C3C').css('font-weight', 'bold');
+
+        $('#detailStratAnnRet').text((data.strategy.annualized_return * 100).toFixed(2) + '%');
+        $('#detailBenchAnnRet').text((data.benchmark.annualized_return * 100).toFixed(2) + '%');
+
+        $('#detailStratSharpe').text(data.strategy.sharpe_ratio.toFixed(3));
+        $('#detailBenchSharpe').text(data.benchmark.sharpe_ratio.toFixed(3));
+        $('#detailSharpeDiff').text((data.outperformance.sharpe >= 0 ? '+' : '') + data.outperformance.sharpe.toFixed(3))
+            .css('color', data.outperformance.sharpe >= 0 ? '#27AE60' : '#E74C3C').css('font-weight', 'bold');
+
+        $('#detailStratSortino').text(data.strategy.sortino_ratio.toFixed(3));
+        $('#detailStratDD').text(stratDD.toFixed(1) + '%');
+        $('#detailBenchDD').text(benchDD.toFixed(1) + '%');
+        $('#detailStratCalmar').text(data.strategy.calmar_ratio.toFixed(3));
+        $('#detailWinRate').text((data.strategy.win_rate * 100).toFixed(1) + '%');
+    }
 });
 </script>
 {% endblock %}

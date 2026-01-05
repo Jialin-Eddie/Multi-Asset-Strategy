@@ -110,11 +110,136 @@ class DataLoader:
                 prices
             )
 
+            # Pre-compute rolling VaR/CVaR
+            from src.backtest.engine import calculate_rolling_var_cvar
+            self.data['var_cvar'] = calculate_rolling_var_cvar(
+                final_backtest['returns'],
+                window=252,
+                confidence_levels=[0.95, 0.99]
+            )
+
+            # Pre-compute stress test scenarios
+            self.data['stress_tests'] = self._compute_stress_tests(
+                prices, final_backtest, benchmark_backtest
+            )
+
+            # Pre-compute EMA sensitivity analysis
+            self.data['ema_sensitivity'] = self._compute_ema_sensitivity(prices)
+
             print("Data loaded successfully")
 
         except Exception as e:
             print(f"Error loading data: {e}")
             raise
+
+    def _compute_stress_tests(self, prices, final_backtest, benchmark_backtest) -> Dict:
+        """
+        Compute performance during major stress test scenarios.
+
+        Returns dict with 3 scenarios: covid, crisis_2008, rate_shock_2022
+        """
+        from src.backtest.engine import calculate_performance_metrics
+
+        scenarios = {
+            'covid': {
+                'name': 'COVID-19 Crash',
+                'start': '2020-02-19',
+                'end': '2020-03-23',
+                'description': 'SPY -34% in 33 days, fastest bear market in history'
+            },
+            'crisis_2008': {
+                'name': '2008 Financial Crisis',
+                'start': '2007-10-09',
+                'end': '2009-03-09',
+                'description': '18-month bear market, SPY -56% peak-to-trough'
+            },
+            'rate_shock_2022': {
+                'name': '2022 Rate Shock',
+                'start': '2022-01-03',
+                'end': '2022-10-12',
+                'description': 'Stocks AND bonds down (TLT -31%, SPY -18%)'
+            }
+        }
+
+        results = {}
+        for key, scenario in scenarios.items():
+            try:
+                # Filter returns for this period
+                strategy_returns = final_backtest['returns'][scenario['start']:scenario['end']]
+                benchmark_returns = benchmark_backtest['returns'][scenario['start']:scenario['end']]
+                spy_returns = prices['SPY'][scenario['start']:scenario['end']].pct_change()
+
+                # Calculate metrics for this period
+                strategy_metrics = calculate_performance_metrics(strategy_returns)
+                benchmark_metrics = calculate_performance_metrics(benchmark_returns)
+
+                # Get SPY drawdown
+                spy_cumulative = (1 + spy_returns).cumprod()
+                spy_dd = (spy_cumulative / spy_cumulative.cummax() - 1).min()
+
+                results[key] = {
+                    'name': scenario['name'],
+                    'start': scenario['start'],
+                    'end': scenario['end'],
+                    'description': scenario['description'],
+                    'strategy_return': strategy_metrics['total_return'],
+                    'benchmark_return': benchmark_metrics['total_return'],
+                    'strategy_max_dd': strategy_metrics['max_drawdown'],
+                    'benchmark_max_dd': benchmark_metrics['max_drawdown'],
+                    'spy_max_dd': spy_dd,
+                    'days': len(strategy_returns),
+                    'outperformance': strategy_metrics['total_return'] - benchmark_metrics['total_return']
+                }
+            except Exception as e:
+                print(f"Warning: Could not compute stress test {key}: {e}")
+                results[key] = None
+
+        return results
+
+    def _compute_ema_sensitivity(self, prices) -> pd.DataFrame:
+        """
+        Compute strategy performance across different EMA window sizes.
+
+        Tests windows: 63, 84, 105, 126, 147, 168, 189, 210, 252, 315, 378 days
+        (approximately 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 18 months)
+
+        Returns DataFrame with columns: window, total_return, sharpe_ratio, max_drawdown, win_rate
+        """
+        from src.signals.trend_filter import generate_signals
+        from src.backtest.engine import backtest_strategy, calculate_performance_metrics
+
+        # EMA windows to test (in trading days, ~21 per month)
+        ema_windows = [63, 84, 105, 126, 147, 168, 189, 210, 252, 315, 378]
+
+        results = []
+        for window in ema_windows:
+            try:
+                # Generate signals with this EMA window
+                signals = generate_signals(prices, method='ema', span=window)
+
+                # Run backtest
+                backtest_result = backtest_strategy(
+                    prices=prices,
+                    signals=signals,
+                    benchmark_returns=prices.pct_change().mean(axis=1),
+                    transaction_cost=0.0005,
+                    rebalance_frequency='M'
+                )
+
+                # Extract key metrics
+                metrics = backtest_result['performance_metrics']
+                results.append({
+                    'window': window,
+                    'months': window / 21,  # Approximate months
+                    'total_return': metrics['total_return'],
+                    'sharpe_ratio': metrics['sharpe_ratio'],
+                    'max_drawdown': metrics['max_drawdown'],
+                    'win_rate': metrics['win_rate']
+                })
+            except Exception as e:
+                print(f"Warning: Could not compute EMA sensitivity for window {window}: {e}")
+
+        return pd.DataFrame(results)
 
     def get_prices(self) -> pd.DataFrame:
         """Get historical prices."""
@@ -158,6 +283,18 @@ class DataLoader:
     def get_trade_log(self) -> pd.DataFrame:
         """Get trade-level log."""
         return self.data.get('trade_log')
+
+    def get_var_cvar(self) -> pd.DataFrame:
+        """Get rolling VaR/CVaR series."""
+        return self.data.get('var_cvar')
+
+    def get_stress_tests(self) -> Dict:
+        """Get stress test scenario results."""
+        return self.data.get('stress_tests')
+
+    def get_ema_sensitivity(self) -> pd.DataFrame:
+        """Get EMA parameter sensitivity analysis."""
+        return self.data.get('ema_sensitivity')
 
 
 # Global data loader instance

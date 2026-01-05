@@ -7,7 +7,8 @@ from app.services.charts import (
     create_rolling_sharpe_chart,
     create_monthly_returns_heatmap,
     create_annual_returns_chart,
-    create_return_distribution_chart
+    create_return_distribution_chart,
+    create_var_cvar_chart
 )
 
 bp = Blueprint('performance', __name__, url_prefix='/performance')
@@ -28,6 +29,10 @@ def index():
     annual_chart = create_annual_returns_chart(strategies)
     distribution_chart = create_return_distribution_chart(final_strategy)
 
+    # Risk analytics charts
+    var_cvar_data = loader.get_var_cvar()
+    var_cvar_chart = create_var_cvar_chart(var_cvar_data) if var_cvar_data is not None else None
+
     # Get metrics for all strategies
     comparison_data = []
     for key, strategy in strategies.items():
@@ -46,6 +51,7 @@ def index():
         monthly_heatmap=monthly_heatmap,
         annual_chart=annual_chart,
         distribution_chart=distribution_chart,
+        var_cvar_chart=var_cvar_chart,
         comparison_data=comparison_data,
         regime_performance=regime_performance
     )
