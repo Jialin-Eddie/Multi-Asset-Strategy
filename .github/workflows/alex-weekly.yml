@@ -1,0 +1,66 @@
+name: "Alex — Weekly Status Report"
+
+on:
+  # Every Monday at 9:00 AM UTC
+  schedule:
+    - cron: '0 9 * * 1'
+  # Also on demand
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Report period (days)'
+        required: false
+        default: '7'
+      summary_only:
+        description: 'Executive summary only'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  alex-report:
+    name: "Alex Generates Weekly Report"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Generate Report
+        id: report
+        run: |
+          DAYS="${{ github.event.inputs.days || '7' }}"
+          SUMMARY="${{ github.event.inputs.summary_only || 'false' }}"
+
+          if [ "$SUMMARY" = "true" ]; then
+            python scripts/alex_report.py --summary --output /tmp/report.md
+          else
+            python scripts/alex_report.py --since "$DAYS" --output /tmp/report.md
+          fi
+
+          # Read report for issue body
+          REPORT=$(cat /tmp/report.md)
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          echo "$REPORT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Issue with Report
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          TITLE="Weekly Status Report — $DATE"
+
+          gh issue create \
+            --title "$TITLE" \
+            --body "$(cat /tmp/report.md)" \
+            --label "status-report"
