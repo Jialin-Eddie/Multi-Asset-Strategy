@@ -1,0 +1,24 @@
+# scripts/ - 分析脚本
+
+一次性研究脚本，用于参数优化和策略对比。均可独立运行。
+
+## 文件说明
+
+| 文件 | 功能 | 关键结论 |
+|------|------|----------|
+| `optimize_sma_lookback.py` | SMA 6 组窗口 (63-378d) 对比 | **252d 最优** |
+| `optimize_ema_span.py` | EMA 6 组 span 对比 | **126d 最优** (非252!) |
+| `compare_all_signals.py` | 5种信号方法横向对比 | EMA 252d 综合最佳 |
+| `backtest_risk_parity.py` | 等权 vs 风险平价 | 差异极小 (<0.02 Sharpe) |
+| `compare_strategies.py` | SMA vs Dual vs B&H | SMA > Dual > B&H |
+| `final_strategy_summary.py` | 最终生产策略汇总 | EMA 126d PRODUCTION READY |
+
+## 运行方式
+
+```bash
+python scripts/optimize_ema_span.py
+```
+
+## 输出
+
+结果保存到 `outputs/` 目录下对应的 CSV 文件。
