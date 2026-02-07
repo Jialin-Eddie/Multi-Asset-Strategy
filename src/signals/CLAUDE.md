@@ -24,3 +24,11 @@ generate_signals(prices, method='ema', **kwargs) → pd.DataFrame  # 统一入�
 ## carry.py 结论
 
 Exp3 验证失败: Mean IC = -0.031 (阈值 >0.10)。根本原因: 缺乏真实 carry 数据 (期货曲线/分红收益率)，代理变量无效。
+
+## 变更日志
+
+### 2026-02-07: 初始创建
+- **变更**: 创建目录说明文件
+- **错误**: carry.py 用短期动量/滚动收益率作为 carry 代理变量，IC = -0.031 完全无效
+- **修复**: Exp3 标记为 FAILED，记录在 EXPERIMENT_03_SUMMARY.md
+- **教训**: 代理变量不等于真实信号；缺乏真实数据时应快速失败而非强行拟合

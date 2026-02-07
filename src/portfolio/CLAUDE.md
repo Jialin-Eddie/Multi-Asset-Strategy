@@ -23,3 +23,10 @@
 - 项目已有 `riskfolio-lib` 依赖，可直接用 HRP
 
 ## 无测试覆盖
+
+## 变更日志
+
+### 2026-02-07: 初始创建
+- **变更**: 创建目录说明文件
+- **错误**: equal_risk_contribution_weights() 函数名暗示 ERC，实际是 inverse vol，具有误导性
+- **教训**: 函数名必须诚实反映实现；占位符应抛出 NotImplementedError 而非默默返回近似值

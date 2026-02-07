@@ -22,3 +22,9 @@ python scripts/optimize_ema_span.py
 ## 输出
 
 结果保存到 `outputs/` 目录下对应的 CSV 文件。
+
+## 变更日志
+
+### 2026-02-07: 初始创建
+- **变更**: 创建目录说明文件
+- **教训**: compare_all_signals.py 结论说 EMA 252d 最佳，但 optimize_ema_span.py 发现 126d 更优 — 两个脚本结论不一致，以后续优化脚本为准

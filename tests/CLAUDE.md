@@ -33,3 +33,9 @@
 ```bash
 pytest tests/ -v
 ```
+
+## 变更日志
+
+### 2026-02-07: 初始创建
+- **变更**: 创建目录说明文件
+- **教训**: backtest/engine.py 和 portfolio/risk_parity.py 零测试覆盖是重大隐患，新功能开发前应先补测试

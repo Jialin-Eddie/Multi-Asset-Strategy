@@ -18,3 +18,8 @@
 - 每个路由通过 `services/data_loader.py` 获取数据
 - 图表用 `services/charts.py` 生成 Plotly JSON
 - 模板在 `templates/` 下同名 HTML
+
+## 变更日志
+
+### 2026-02-07: 初始创建
+- **变更**: 创建目录说明文件

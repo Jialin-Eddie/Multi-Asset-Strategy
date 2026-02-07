@@ -27,3 +27,10 @@ constraints:
 - 生产策略实际用 EMA 126d (非 yaml 中的 252d lookback)
 - yaml 中的 target_vol 和 max_weight 目前仅被 risk_parity.py 部分使用
 - 修改后需重新运行 downloader.py 获取新数据
+
+## 变更日志
+
+### 2026-02-07: 初始创建
+- **变更**: 创建目录说明文件
+- **错误**: yaml 中 lookback_days: 252 与生产实际使用的 EMA 126d 不一致
+- **教训**: 配置文件应反映真实生产参数，否则造成混乱

@@ -109,6 +109,31 @@ Edit `config/universe.yaml` to modify asset universe or strategy parameters. Re-
 **Adding new signals:**
 Implement in `src/signals/` following the pattern: take DataFrame of prices, return DataFrame of signals/scores.
 
+## CLAUDE.md 维护规则 (强制)
+
+每个子目录都有 `CLAUDE.md` 文件，用于快速了解该目录的上下文。
+
+**强制规则: 每次对某个目录的代码做出重大更改时，必须同步更新该目录的 `CLAUDE.md`。**
+
+更新内容必须包含:
+1. **变更记录**: 改了什么、为什么改
+2. **发现的错误**: 遇到了什么 bug 或问题
+3. **修复方法**: 怎么解决的、学到了什么教训
+
+格式: 在对应 CLAUDE.md 的 `## 变更日志` 区域追加条目:
+```
+### YYYY-MM-DD: 简短描述
+- **变更**: 具体改动
+- **错误**: 发现的问题 (如有)
+- **修复**: 如何解决
+- **教训**: 下次如何避免
+```
+
+**自动化保障**:
+- Git pre-commit hook 会在源文件变更但 CLAUDE.md 未更新时发出警告
+- Claude Code PostToolUse hook 在每次 git commit 后提醒更新
+- Claude Code Stop hook 在会话结束时检查是否遗漏
+
 ## Future Components (Planned)
 
 - **Portfolio optimization:** Risk parity, mean-variance, hierarchical risk parity

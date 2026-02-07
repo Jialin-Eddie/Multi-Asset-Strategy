@@ -32,3 +32,9 @@
 - regime 分类用硬编码阈值 (±20%), 无统计基础
 - 无滑点模型
 - 无 position_size='equal_risk' 的实际实现 (fallback 到 equal_weight)
+
+## 变更日志
+
+### 2026-02-07: 初始创建
+- **变更**: 创建目录说明文件
+- **教训**: position_size='equal_risk' 参数存在但未实现，调用时静默 fallback 到 equal_weight，应该抛出 NotImplementedError 或明确文档
