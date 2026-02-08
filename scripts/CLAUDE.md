@@ -14,6 +14,7 @@
 | `final_strategy_summary.py` | 最终生产策略汇总 | EMA 126d PRODUCTION READY |
 | `john_review.py` | John 代码审查 agent (本地版) | 复杂度评分+自动检查 |
 | `alex_report.py` | Alex 管理汇报 agent | 自动生成周报+执行摘要 |
+| `phase_complete.py` | Phase 完成编排脚本 | 自动运行 John + Alex |
 
 ## 运行方式
 
@@ -39,3 +40,7 @@ python scripts/optimize_ema_span.py
 - **变更**: 新增 `alex_report.py` — 从项目数据自动生成管理层可读的状态报告
 - **用法**: `python scripts/alex_report.py` (周报) 或 `--summary` (执行摘要)
 - **教训**: 技术指标需要翻译成业务语言才能让管理层理解项目价值
+
+### 2026-02-08: 添加 Phase 完成编排脚本
+- **变更**: 新增 `phase_complete.py` — 在 phase 里程碑提交后自动运行 John (代码审查) + Alex (管理汇报)
+- **用法**: `python scripts/phase_complete.py --phase 0` 或 `--dry-run` 预览
