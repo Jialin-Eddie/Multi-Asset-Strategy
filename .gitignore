@@ -70,3 +70,18 @@ logs/
 # OS files
 Thumbs.db
 .DS_Store
+
+# ============================================
+# Phase delivery artifacts (Release assets only — never commit)
+# ============================================
+report/**
+!report/.gitkeep
+
+# Model weights / checkpoints (any location)
+*.ckpt
+*.pt
+*.pth
+*.onnx
+
+# Release packaging artifacts
+release_assets/
