@@ -1,0 +1,305 @@
+name: Release on Tag Push
+
+on:
+  push:
+    tags:
+      - 'v*-phase*-*'
+
+permissions:
+  contents: write
+
+env:
+  CONDA_ENV: multi_as_env
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code at tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Parse tag metadata
+        id: meta
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+          # Extract version: v0.3.0 from v0.3.0-phase03-backtest
+          VERSION=$(echo "$TAG" | grep -oP '^v\d+\.\d+\.\d+')
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+          # Extract phaseNN: phase03 from v0.3.0-phase03-backtest
+          PHASE=$(echo "$TAG" | grep -oP 'phase\d+')
+          PHASE_NUM=$(echo "$PHASE" | grep -oP '\d+')
+          echo "phase=${PHASE}" >> "$GITHUB_OUTPUT"
+          echo "phase_num=${PHASE_NUM}" >> "$GITHUB_OUTPUT"
+
+          # Extract short name: backtest from v0.3.0-phase03-backtest
+          SHORT_NAME=$(echo "$TAG" | sed "s/^${VERSION}-${PHASE}-//")
+          echo "short_name=${SHORT_NAME}" >> "$GITHUB_OUTPUT"
+
+          # Build display title
+          PADDED_NUM=$(printf "%02d" "$PHASE_NUM")
+          TITLE="Phase ${PADDED_NUM} — ${SHORT_NAME} (${VERSION})"
+          echo "title=${TITLE}" >> "$GITHUB_OUTPUT"
+
+          # Artifact directory
+          ARTIFACT_DIR="report/phase${PADDED_NUM}"
+          echo "artifact_dir=${ARTIFACT_DIR}" >> "$GITHUB_OUTPUT"
+
+          echo "--- Parsed tag metadata ---"
+          echo "Tag:          ${TAG}"
+          echo "Version:      ${VERSION}"
+          echo "Phase:        ${PHASE} (num: ${PHASE_NUM})"
+          echo "Short name:   ${SHORT_NAME}"
+          echo "Title:        ${TITLE}"
+          echo "Artifact dir: ${ARTIFACT_DIR}"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          # Install additional deps if requirements_dashboard.txt exists
+          if [ -f requirements_dashboard.txt ]; then
+            pip install -r requirements_dashboard.txt
+          fi
+
+      - name: Create artifact directories
+        run: |
+          ARTIFACT_DIR="${{ steps.meta.outputs.artifact_dir }}"
+          mkdir -p "${ARTIFACT_DIR}/results"
+          mkdir -p "${ARTIFACT_DIR}/model"
+          mkdir -p "${ARTIFACT_DIR}/meta"
+
+      - name: Generate phase artifacts
+        id: generate
+        run: |
+          ARTIFACT_DIR="${{ steps.meta.outputs.artifact_dir }}"
+          PHASE_NUM="${{ steps.meta.outputs.phase_num }}"
+          TAG="${{ steps.meta.outputs.tag }}"
+
+          echo "=== Generating artifacts for ${TAG} ==="
+
+          # ---- Data pipeline ----
+          echo ">> Running data pipeline..."
+          python src/data/downloader.py || echo "WARN: downloader failed (may need network/API access)"
+          python src/data/loader.py || echo "WARN: loader failed (may need raw data)"
+
+          # ---- Phase-specific scripts ----
+          # Attempt common generation patterns; failures are non-fatal
+          # Each phase should define its own scripts; these are best-effort defaults
+
+          # Run all scripts in scripts/ directory (they output to outputs/)
+          for script in scripts/*.py; do
+            if [ -f "$script" ]; then
+              echo ">> Running ${script}..."
+              python "$script" 2>&1 || echo "WARN: ${script} failed"
+            fi
+          done
+
+          # ---- Copy outputs to artifact dir ----
+          echo ">> Copying outputs to ${ARTIFACT_DIR}/results/"
+          if [ -d "outputs" ]; then
+            cp -r outputs/*.csv "${ARTIFACT_DIR}/results/" 2>/dev/null || true
+            cp -r outputs/*.json "${ARTIFACT_DIR}/results/" 2>/dev/null || true
+            cp -r outputs/*.txt "${ARTIFACT_DIR}/results/" 2>/dev/null || true
+            cp -r outputs/*.png "${ARTIFACT_DIR}/results/" 2>/dev/null || true
+            cp -r outputs/*.pkl "${ARTIFACT_DIR}/results/" 2>/dev/null || true
+          fi
+
+          # Copy experiment results if they exist
+          if [ -d "outputs/experiments" ]; then
+            cp -r outputs/experiments/* "${ARTIFACT_DIR}/results/" 2>/dev/null || true
+          fi
+          if [ -d "outputs/data_quality" ]; then
+            cp -r outputs/data_quality/* "${ARTIFACT_DIR}/results/" 2>/dev/null || true
+          fi
+
+          # ---- Generate report (best-effort) ----
+          # Try common report generation methods
+          if command -v pandoc &>/dev/null && [ -f "${ARTIFACT_DIR}/results/FINAL_STRATEGY_REPORT.txt" ]; then
+            echo ">> Generating PDF with pandoc..."
+            pandoc "${ARTIFACT_DIR}/results/FINAL_STRATEGY_REPORT.txt" \
+              -o "${ARTIFACT_DIR}/report.pdf" 2>/dev/null || true
+          fi
+
+          # If no PDF was generated, create a text-based report as fallback
+          if [ ! -f "${ARTIFACT_DIR}/report.pdf" ]; then
+            echo ">> No PDF generator available. Creating text report..."
+            {
+              echo "Phase ${PHASE_NUM} Report — Tag: ${TAG}"
+              echo "Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+              echo "Commit: ${GITHUB_SHA}"
+              echo ""
+              echo "=== Strategy Report ==="
+              if [ -f "${ARTIFACT_DIR}/results/FINAL_STRATEGY_REPORT.txt" ]; then
+                cat "${ARTIFACT_DIR}/results/FINAL_STRATEGY_REPORT.txt"
+              else
+                echo "(No strategy report generated)"
+              fi
+              echo ""
+              echo "=== Artifacts ==="
+              find "${ARTIFACT_DIR}" -type f | sort
+            } > "${ARTIFACT_DIR}/report.txt"
+          fi
+
+          # ---- Save metadata ----
+          echo ">> Writing metadata..."
+          cat > "${ARTIFACT_DIR}/meta/run_info.json" <<METAEOF
+          {
+            "tag": "${TAG}",
+            "commit": "${GITHUB_SHA}",
+            "phase": "${PHASE_NUM}",
+            "timestamp": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')",
+            "python_version": "$(python --version 2>&1)",
+            "runner": "${RUNNER_OS}",
+            "artifact_dir": "${ARTIFACT_DIR}"
+          }
+          METAEOF
+
+          # Save pip freeze
+          pip freeze > "${ARTIFACT_DIR}/meta/pip_freeze.txt"
+
+          echo "=== Artifact generation complete ==="
+          ls -laR "${ARTIFACT_DIR}"
+
+      - name: Package assets for upload
+        id: package
+        run: |
+          ARTIFACT_DIR="${{ steps.meta.outputs.artifact_dir }}"
+          UPLOAD_DIR="release_assets"
+          mkdir -p "${UPLOAD_DIR}"
+
+          # ---- Report (PDF or TXT) ----
+          if [ -f "${ARTIFACT_DIR}/report.pdf" ]; then
+            cp "${ARTIFACT_DIR}/report.pdf" "${UPLOAD_DIR}/report.pdf"
+          elif [ -f "${ARTIFACT_DIR}/report.txt" ]; then
+            cp "${ARTIFACT_DIR}/report.txt" "${UPLOAD_DIR}/report.txt"
+          fi
+
+          # ---- Results → zip ----
+          if [ -d "${ARTIFACT_DIR}/results" ] && [ "$(ls -A ${ARTIFACT_DIR}/results 2>/dev/null)" ]; then
+            cd "${ARTIFACT_DIR}/results"
+            zip -r "../../../${UPLOAD_DIR}/results.zip" . 2>/dev/null
+            cd -
+          fi
+
+          # ---- Model → zip (with split if >1.5G) ----
+          if [ -d "${ARTIFACT_DIR}/model" ] && [ "$(ls -A ${ARTIFACT_DIR}/model 2>/dev/null)" ]; then
+            cd "${ARTIFACT_DIR}/model"
+            zip -r "../../../${UPLOAD_DIR}/model.zip" . 2>/dev/null
+            cd -
+
+            # Check size and split if needed (1.5 GiB = 1610612736 bytes)
+            MODEL_SIZE=$(stat -c%s "${UPLOAD_DIR}/model.zip" 2>/dev/null || echo "0")
+            if [ "$MODEL_SIZE" -gt 1610612736 ]; then
+              echo "WARN: model.zip is ${MODEL_SIZE} bytes (>1.5 GiB). Splitting..."
+              split -b 1500m "${UPLOAD_DIR}/model.zip" "${UPLOAD_DIR}/model.zip.part"
+              rm "${UPLOAD_DIR}/model.zip"
+              echo "Split into parts:"
+              ls -la "${UPLOAD_DIR}/model.zip.part"*
+            fi
+          fi
+
+          # ---- Meta → zip ----
+          if [ -d "${ARTIFACT_DIR}/meta" ] && [ "$(ls -A ${ARTIFACT_DIR}/meta 2>/dev/null)" ]; then
+            cd "${ARTIFACT_DIR}/meta"
+            zip -r "../../../${UPLOAD_DIR}/meta.zip" . 2>/dev/null
+            cd -
+          fi
+
+          echo "=== Assets ready for upload ==="
+          ls -la "${UPLOAD_DIR}/"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+          VERSION="${{ steps.meta.outputs.version }}"
+          PHASE_NUM="${{ steps.meta.outputs.phase_num }}"
+          SHORT_NAME="${{ steps.meta.outputs.short_name }}"
+          ARTIFACT_DIR="${{ steps.meta.outputs.artifact_dir }}"
+          PADDED_NUM=$(printf "%02d" "$PHASE_NUM")
+
+          cat > release_notes.md <<NOTESEOF
+          ## Scope
+          - Phase ${PADDED_NUM} delivery: **${SHORT_NAME}**
+          - Tag: \`${TAG}\`
+          - Commit: \`${GITHUB_SHA}\`
+
+          ## How to Reproduce
+
+          \`\`\`bash
+          git checkout ${TAG}
+          conda env create -f environment.yml
+          conda activate multi_as_env
+          python src/data/downloader.py
+          python src/data/loader.py
+          # Run phase-specific scripts (see scripts/ directory)
+          \`\`\`
+
+          Results will be written to \`${ARTIFACT_DIR}/results/\`.
+
+          ## Results Summary
+
+          See \`results.zip\` for full outputs. Key files:
+          - \`${ARTIFACT_DIR}/results/FINAL_STRATEGY_REPORT.txt\` — strategy report
+          - \`${ARTIFACT_DIR}/results/metrics.json\` — key metrics (if generated)
+          - \`${ARTIFACT_DIR}/results/*.csv\` — tabular results
+
+          ## Assets Attached
+
+          | Asset | Description |
+          |-------|-------------|
+          | \`report.pdf\` or \`report.txt\` | Phase report document |
+          | \`results.zip\` | All result files (CSV, JSON, TXT, PNG) |
+          | \`model.zip\` | Model weights/checkpoints (if applicable) |
+          | \`meta.zip\` | Run metadata (git SHA, pip freeze, run config) |
+
+          ## Rollback
+
+          \`\`\`bash
+          git revert -m 1 <merge-commit-sha>
+          \`\`\`
+
+          ---
+          _Generated by CI on $(date -u '+%Y-%m-%d %H:%M:%S UTC')_
+          NOTESEOF
+
+      - name: Create GitHub Release and upload assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+          TITLE="${{ steps.meta.outputs.title }}"
+
+          # Collect all asset files
+          ASSETS=""
+          for f in release_assets/*; do
+            if [ -f "$f" ]; then
+              ASSETS="${ASSETS} ${f}"
+            fi
+          done
+
+          if [ -z "$ASSETS" ]; then
+            echo "ERROR: No assets found to upload!"
+            exit 1
+          fi
+
+          echo "Creating release: ${TITLE}"
+          echo "Assets: ${ASSETS}"
+
+          gh release create "${TAG}" \
+            --title "${TITLE}" \
+            --notes-file release_notes.md \
+            ${ASSETS}
+
+          echo "=== Release created successfully ==="
+          gh release view "${TAG}"
