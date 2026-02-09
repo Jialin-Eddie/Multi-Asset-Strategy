@@ -1,0 +1,196 @@
+name: "John — Code Review 🔴"
+
+# Triggers on every PR to main
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  john-review:
+    name: "John Reviews Your PR"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff and file stats
+        id: diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the diff
+          git diff origin/main...HEAD > /tmp/pr_diff.txt
+
+          # Count new vs modified files
+          NEW_FILES=$(git diff origin/main...HEAD --name-only --diff-filter=A | wc -l)
+          MOD_FILES=$(git diff origin/main...HEAD --name-only --diff-filter=M | wc -l)
+          DEL_FILES=$(git diff origin/main...HEAD --name-only --diff-filter=D | wc -l)
+          TOTAL_ADD=$(git diff origin/main...HEAD --stat | tail -1 | grep -oP '\d+ insertion' | grep -oP '\d+' || echo 0)
+          TOTAL_DEL=$(git diff origin/main...HEAD --stat | tail -1 | grep -oP '\d+ deletion' | grep -oP '\d+' || echo 0)
+
+          # List new files specifically (John cares most about these)
+          NEW_FILE_LIST=$(git diff origin/main...HEAD --name-only --diff-filter=A | head -20)
+
+          # File extension breakdown
+          PY_FILES=$(git diff origin/main...HEAD --name-only | grep '\.py$' | wc -l)
+          MD_FILES=$(git diff origin/main...HEAD --name-only | grep '\.md$' | wc -l)
+
+          echo "new_files=$NEW_FILES" >> $GITHUB_OUTPUT
+          echo "mod_files=$MOD_FILES" >> $GITHUB_OUTPUT
+          echo "del_files=$DEL_FILES" >> $GITHUB_OUTPUT
+          echo "total_add=${TOTAL_ADD:-0}" >> $GITHUB_OUTPUT
+          echo "total_del=${TOTAL_DEL:-0}" >> $GITHUB_OUTPUT
+          echo "py_files=$PY_FILES" >> $GITHUB_OUTPUT
+          echo "md_files=$MD_FILES" >> $GITHUB_OUTPUT
+
+          # Save new file list for the review
+          echo "$NEW_FILE_LIST" > /tmp/new_files.txt
+
+      - name: John's Automated Checks
+        id: checks
+        run: |
+          WARNINGS=""
+          SEVERITY="PASS"
+
+          # Check 1: Too many new files
+          if [ "${{ steps.diff.outputs.new_files }}" -gt 3 ]; then
+            WARNINGS="$WARNINGS\n⚠️ **${{ steps.diff.outputs.new_files }} new files added.** Each new file is a maintenance liability. Justify every one."
+            SEVERITY="WARN"
+          fi
+
+          # Check 2: More docs than code
+          if [ "${{ steps.diff.outputs.md_files }}" -gt "${{ steps.diff.outputs.py_files }}" ] && [ "${{ steps.diff.outputs.md_files }}" -gt 0 ]; then
+            WARNINGS="$WARNINGS\n⚠️ **More .md files (${{ steps.diff.outputs.md_files }}) changed than .py files (${{ steps.diff.outputs.py_files }}).** Are we writing docs or software?"
+            SEVERITY="WARN"
+          fi
+
+          # Check 3: More additions than deletions (by a lot)
+          TOTAL_ADD=${{ steps.diff.outputs.total_add }}
+          TOTAL_DEL=${{ steps.diff.outputs.total_del }}
+          if [ "${TOTAL_ADD:-0}" -gt 0 ] && [ "${TOTAL_DEL:-0}" -eq 0 ]; then
+            WARNINGS="$WARNINGS\n⚠️ **${TOTAL_ADD} lines added, 0 deleted.** Pure additions without cleanup increase complexity. Consider what can be removed."
+            SEVERITY="WARN"
+          fi
+
+          # Check 4: Placeholder pattern detection
+          if git diff origin/main...HEAD | grep -qi "placeholder\|todo\|fixme\|hack\|temporary\|workaround"; then
+            WARNINGS="$WARNINGS\n🔴 **Placeholder/TODO/HACK detected in diff.** Ship it done or don't ship it."
+            SEVERITY="FAIL"
+          fi
+
+          # Check 5: New CLAUDE.md files (meta-complexity)
+          NEW_CLAUDE=$(git diff origin/main...HEAD --name-only --diff-filter=A | grep "CLAUDE.md" | wc -l)
+          if [ "$NEW_CLAUDE" -gt 0 ]; then
+            WARNINGS="$WARNINGS\n⚠️ **$NEW_CLAUDE new CLAUDE.md file(s).** Meta-documentation is meta-complexity. Is this necessary?"
+          fi
+
+          # Check 6: Config vs code consistency
+          if git diff origin/main...HEAD --name-only | grep -q "universe.yaml"; then
+            WARNINGS="$WARNINGS\n📋 **Config changed.** Verify all code references still match the config values."
+          fi
+
+          if [ -z "$WARNINGS" ]; then
+            WARNINGS="✅ No automated concerns found. Still needs human/AI review."
+          fi
+
+          # Escape for GitHub Actions
+          echo "warnings<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$WARNINGS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "severity=$SEVERITY" >> $GITHUB_OUTPUT
+
+      - name: Call Claude API for Deep Review
+        id: claude_review
+        if: env.ANTHROPIC_API_KEY != ''
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Read John's persona
+          PERSONA=$(cat .github/john-persona.md)
+
+          # Read the diff (truncate to ~50KB for API limits)
+          DIFF=$(head -c 50000 /tmp/pr_diff.txt)
+          NEW_FILES=$(cat /tmp/new_files.txt)
+
+          # Build the prompt
+          PROMPT="You are John, a picky code reviewer. Review this PR.
+
+          PR Title: ${{ github.event.pull_request.title }}
+
+          Stats:
+          - New files: ${{ steps.diff.outputs.new_files }}
+          - Modified files: ${{ steps.diff.outputs.mod_files }}
+          - Deleted files: ${{ steps.diff.outputs.del_files }}
+          - Lines added: ${{ steps.diff.outputs.total_add }}
+          - Lines deleted: ${{ steps.diff.outputs.total_del }}
+
+          New files added:
+          $NEW_FILES
+
+          Diff:
+          $DIFF
+
+          Review this according to your persona. Be specific. Cite file names and line numbers."
+
+          # Call Claude API
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "content-type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d "$(jq -n \
+              --arg system "$PERSONA" \
+              --arg prompt "$PROMPT" \
+              '{
+                model: "claude-sonnet-4-5-20250929",
+                max_tokens: 2000,
+                system: $system,
+                messages: [{role: "user", content: $prompt}]
+              }')" | jq -r '.content[0].text // "Review unavailable — check API key."')
+
+          # Save response
+          echo "$RESPONSE" > /tmp/claude_review.txt
+
+      - name: Post Review Comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Build the comment
+          CLAUDE_REVIEW=""
+          if [ -f /tmp/claude_review.txt ]; then
+            CLAUDE_REVIEW=$(cat /tmp/claude_review.txt)
+          fi
+
+          COMMENT="## 🔴 John's Code Review
+
+          ### Automated Checks
+
+          | Metric | Value |
+          |--------|-------|
+          | New files | ${{ steps.diff.outputs.new_files }} |
+          | Modified files | ${{ steps.diff.outputs.mod_files }} |
+          | Deleted files | ${{ steps.diff.outputs.del_files }} |
+          | Lines added | ${{ steps.diff.outputs.total_add }} |
+          | Lines deleted | ${{ steps.diff.outputs.total_del }} |
+          | .py files changed | ${{ steps.diff.outputs.py_files }} |
+          | .md files changed | ${{ steps.diff.outputs.md_files }} |
+
+          ${{ steps.checks.outputs.warnings }}
+
+          ---
+
+          ### Deep Review
+
+          ${CLAUDE_REVIEW:-*Claude API review not available. Set ANTHROPIC_API_KEY secret to enable.*}
+
+          ---
+          *John — the reviewer who asks \"do we really need this?\"*
+          *Complexity score thresholds: new_files > 3 ⚠️ | placeholders 🔴 | more .md than .py ⚠️*"
+
+          gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT"
