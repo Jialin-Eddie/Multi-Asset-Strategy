@@ -109,6 +109,42 @@ Edit `config/universe.yaml` to modify asset universe or strategy parameters. Re-
 **Adding new signals:**
 Implement in `src/signals/` following the pattern: take DataFrame of prices, return DataFrame of signals/scores.
 
+## 上下文管理规则 (强制)
+
+当对话上下文窗口接近 **50% 容量**时，必须自动执行以下操作：
+
+1. **打 checkpoint**: `git tag -a checkpoint-<描述> -m "..."` 标记当前进度
+2. **更新 MEMORY.md**: 将当前项目状态、进行中的任务、未完成工作写入 `/root/.claude/projects/-home-user-Multi-Asset-Strategy/memory/MEMORY.md`
+3. **压缩对话**: 主动总结已完成工作，清理冗余上下文，释放窗口空间给后续任务
+
+**判断标准**: 如果你感觉上下文变长、响应变慢、或已经进行了大量工具调用（>50 次），就应该触发 checkpoint + 压缩。不要等到被系统强制截断才处理。
+
+**目的**: 防止关键上下文在自动压缩中丢失。MEMORY.md 是跨会话的持久记忆，checkpoint tag 是代码状态的快照。
+
+## 根目录整洁规则 (强制)
+
+**根目录是项目的门面，必须保持最小化。** 质疑每一个要放在根目录下的新文件。
+
+### 允许存在于根目录的文件类型
+- **必要配置**: `CLAUDE.md`, `.gitignore`, `environment.yml`, `requirements.txt`, `setup.py`/`pyproject.toml`
+- **项目说明**: `README.md`, `LICENSE`
+- **已有评估文档**: `EVALUATION_AND_ROADMAP.md`（历史原因保留）
+
+### 禁止随意在根目录创建的文件
+- **临时输出/报告**: 放入 `outputs/` 目录
+- **Jupyter notebooks**: 放入 `notebooks/` 目录
+- **脚本**: 放入 `scripts/` 目录
+- **配置文件**: 放入 `config/` 目录
+- **新的 .md 文档**: 除非有强力理由，否则放入 `docs/` 目录
+
+### 创建前必须回答的问题
+每次要在根目录创建新文件时，先回答：
+1. **这个文件能不能放到某个子目录里？** → 如果可以，放子目录
+2. **这个文件是不是所有开发者都需要第一时间看到的？** → 如果不是，不该在根目录
+3. **根目录已有类似文件吗？** → 如果有，合并而不是新建
+
+**违反处罚**: 如果在根目录创建了不必要的文件，下次 John 审查时会被标记为 ❌ Reject。
+
 ## CLAUDE.md 维护规则 (强制)
 
 每个子目录都有 `CLAUDE.md` 文件，用于快速了解该目录的上下文。
