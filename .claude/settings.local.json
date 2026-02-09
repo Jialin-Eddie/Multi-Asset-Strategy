@@ -11,5 +11,18 @@
       "Bash(git commit:*)",
       "Bash(curl:*)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "bash -c 'if echo \"$CLAUDE_TOOL_INPUT\" | grep -q \"git commit\"; then echo \"CLAUDE.MD REMINDER: You just committed. Update relevant CLAUDE.md changelog with: what changed, errors found, lessons learned.\"; fi'"
+      }
+    ],
+    "Stop": [
+      {
+        "command": "bash -c 'cd /home/user/Multi-Asset-Strategy 2>/dev/null && CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -v CLAUDE.md | head -5); if [ -n \"$CHANGED\" ]; then echo \"SESSION END: Files modified this session. Ensure CLAUDE.md files record changes, errors, and fixes.\"; fi'"
+      }
+    ]
   }
 }
