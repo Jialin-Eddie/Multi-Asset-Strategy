@@ -134,6 +134,76 @@ Implement in `src/signals/` following the pattern: take DataFrame of prices, ret
 - Claude Code PostToolUse hook 在每次 git commit 后提醒更新
 - Claude Code Stop hook 在会话结束时检查是否遗漏
 
+## Phase 交付流程 (强制)
+
+每个 Phase 完成后，必须执行以下 GitHub 操作，**不能只 push 代码**：
+
+### 1. GitHub 对象创建清单
+
+| 操作 | 说明 | 命令 |
+|------|------|------|
+| **Milestone** | 创建并关联到 Phase | `gh api repos/OWNER/REPO/milestones --method POST -f title="Phase N: ..."` |
+| **Issues** | 每个模块一个 issue，关联 milestone | `gh issue create --milestone "Phase N: ..."` |
+| **PR** | 从 feature branch → master，body 中 `closes #N` 关联 issues | `gh pr create --base master --milestone "..."` |
+| **Review** | 在 PR 上运行 John 代码审查并提交 PR Review | 用 GitHub API `POST /pulls/{n}/reviews` |
+| **Release** | 打 tag + 创建 release，包含变更说明 | `gh release create vX.Y.Z` |
+| **Close** | Issues/Milestone 在 merge 后关闭 | PR body 的 `closes #N` 自动关闭 |
+
+### 2. 前置条件
+
+- **`gh` CLI 需要认证**: 容器环境没有 GitHub API token，只有 git push 代理。需要用户提供 `GH_TOKEN` (Fine-grained PAT)
+- **John 的 workflow 需在 master 上**: `.github/workflows/john-review.yml` 只有在 master 分支上才会被 PR 事件触发。新 workflow 必须先 merge 到 master
+- **不能对自己的 PR request changes**: GitHub 限制。John 的 review 用 `COMMENT` 事件代替
+
+### 3. John 代码审查要求
+
+John 的审查**必须包含逐行代码评论**，不能只是文件统计。审查内容：
+- 具体 bug（NaN 处理、零除、边界条件）
+- 性能问题（Python 循环 vs 向量化）
+- API 设计缺陷（参数校验、权重归一化）
+- 每条评论需附带**修复建议代码**
+
+`scripts/john_review.py` 只做基础统计，**不算真正审查**。真正审查需要读代码并通过 PR Review API 提交 inline comments。
+
+## 已知问题与教训 (Session Log)
+
+### 2026-02-08: Phase 1 交付流程问题
+
+**问题 1: 只 push 代码没有创建 GitHub 对象**
+- **现象**: 代码已 push 但 GitHub 上看不到 PR、milestone、issues
+- **原因**: 只做了 `git push`，没有调用 GitHub API 创建项目管理对象
+- **修复**: 补充了完整的 Phase 交付流程清单（见上方）
+- **教训**: **Phase 完成 ≠ 代码 push。必须创建 PR + milestone + issues + review + release**
+
+**问题 2: 容器环境无 GitHub API token**
+- **现象**: `gh auth login` 失败，无法创建 PR/issues
+- **原因**: 本地 git 代理 (127.0.0.1:53486) 只支持 git smart HTTP 协议，不转发 REST API。GitHub token 存储在代理服务端，子进程不可访问
+- **修复**: 用户提供 Fine-grained PAT → `GH_TOKEN` 环境变量
+- **教训**: **Claude Code 远程容器中 git push ≠ API access。需要用户提供 PAT**
+
+**问题 3: John workflow 不自动触发**
+- **现象**: PR 创建后 John 的 GitHub Actions 审查没有运行
+- **原因**: `john-review.yml` 只在 feature branch 上，不在 master 上。GitHub Actions 的 `pull_request` 触发器要求 workflow 在**目标分支**上
+- **修复**: 手动运行 John 审查 + 通过 API 提交 PR Review
+- **教训**: **新的 workflow 文件必须先 merge 到 master 才能被 PR 事件触发**
+
+**问题 4: John 审查只是文件统计，不是代码审查**
+- **现象**: John 只报告了文件数量和 .md/.py 比例，没有审查具体代码
+- **原因**: `scripts/john_review.py` 设计为轻量统计工具，不读代码内容
+- **修复**: 用 subagent 逐文件审查代码 → 通过 GitHub PR Review API 提交 inline comments
+- **教训**: **代码审查必须 review 代码本身。统计指标不等于审查**
+
+**问题 5: 不能对自己的 PR request changes**
+- **现象**: `REQUEST_CHANGES` 事件返回 422 错误
+- **原因**: GitHub 不允许 PR 创建者对自己的 PR request changes
+- **修复**: 改用 `COMMENT` 事件，inline comments 同样可见
+- **教训**: **用同一 token 创建 PR + 审查时，只能用 COMMENT 不能用 REQUEST_CHANGES**
+
+**问题 6: 没有 GitHub Release**
+- **现象**: 项目没有任何 release/tag
+- **修复**: 每个 Phase 完成后创建 release tag
+- **教训**: **Release 是项目交付的最终产物，不能遗漏**
+
 ## Future Components (Planned)
 
 - **Portfolio optimization:** Risk parity, mean-variance, hierarchical risk parity
